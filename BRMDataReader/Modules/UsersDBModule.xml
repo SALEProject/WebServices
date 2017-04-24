@@ -1,0 +1,3089 @@
+﻿<UsersDBModule>
+
+  <Messages>
+    <ID>select_ChatHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT M."ID", 
+      CASE WHEN U."LoginName" IS NULL THEN 'system' ELSE U."LoginName" END AS "LoginName",
+      M."Date", M."Message" 
+      FROM "Messages" M
+      LEFT JOIN "Users" U ON (M."ID_User" = U."ID")
+      WHERE ((M."Date" &gt;= @prm_Date) OR (@prm_Date = '')) AND (M."Date" &gt; CAST(CONVERT(VARCHAR(20), GetDate(), 102) AS DATETIME)) AND (M."ID_Bursary" = @prm_ID_Bursary)
+    </SQL>
+  </Messages>
+
+  <Alerts>
+    <ID>select_Alerts</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Alerts"
+    </SQL>
+  </Alerts>
+
+  <Alerts>
+    <ID>select_AlertsHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Date", 
+      CASE WHEN M."Name" IS NULL THEN '' ELSE M."Name" END AS "Market", 
+      CASE WHEN R."Name" IS NULL THEN '' ELSE R."Name" END AS "Ring",
+      CASE WHEN AST."Code" IS NULL THEN '' ELSE AST."Code" END AS "AssetCode", 
+      CASE WHEN AST."Name" IS NULL THEN '' ELSE AST."Name" END AS "AssetName", 
+      A."Message", A."Message_RO", A."Message_EN"
+      FROM "Alerts" A
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "Assets" AST ON (A."ID_Asset" = AST."ID")
+      WHERE ((A."Date" >= @prm_Date) OR (@prm_Date = '')) AND ((M."ID_Bursary" = @prm_ID_Bursary) OR (@prm_ID_Bursary = -1))
+    </SQL>
+  </Alerts>
+
+  <Notifications>
+    <ID>select_NotificationsHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT N."ID", N."Date", SenderU."LoginName" AS "UserFrom", SenderA."Name" AS "AgencyFrom", N."Subject", N."Body", N."isRead"
+      FROM "Notifications" N
+      LEFT JOIN "Users" SenderU ON (N."ID_SenderUser" = SenderU."ID")
+      LEFT JOIN "Agencies" SenderA ON (N."ID_SenderAgency" = SenderA."ID")
+      LEFT JOIN "Users" RecipientU ON (N."ID_RecipientUser" = RecipientU."ID")
+      LEFT JOIN "Agencies" RecipientA ON (N."ID_RecipientAgency" = RecipientA."ID")
+      WHERE (N."ID_Bursary" = @prm_ID_Bursary) AND ((N."Date" >= @prm_Date) OR (@prm_Date = ''))
+    </SQL>
+  </Notifications>
+
+  <Agencies>
+    <ID>select_AgenciesDetailed</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM
+      (
+	      SELECT ROW_NUMBER() OVER (ORDER BY T."#prm_SortField" #prm_SortOrder) AS "row", T.* FROM
+	      (
+		      SELECT (SELECT COUNT(*) FROM "Agencies") AS "count", A."ID", A."Code", A."Name" AS "AgencyName", I."FiscalCode",
+		      I."RegisterCode", I."CompanyName", A."ContractStartDate", A."ContractEndDate", A."ContractNumber", A."Status",
+		      I."Phone", I."Mobile", I."Fax", I."Email", I."Website",
+		      ADR."StreetAddress", ADR."City", ADR."PostalCode", ADR."ID_County"
+		      FROM "Agencies" A
+		      LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency") AND (C."isHouse" = 1)
+		      LEFT JOIN "Identities" I ON (A."ID" = I."ID_Agency") AND (C."ID" = I."ID_Client")
+		      LEFT JOIN "Addresses" ADR ON (I."ID_Address" = ADR."ID")
+		      WHERE (A."ID_Bursary" = @prm_ID_Bursary) AND ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0)
+		      AND ((@prm_QueryKeyword = '') OR ((A."Code" LIKE '%' + @prm_QueryKeyword + '%') OR (A."Name" LIKE '%' + @prm_QueryKeyword + '%') OR (A."Status" LIKE '%' + @prm_QueryKeyword + '%') OR (I."FiscalCode" LIKE '%' + @prm_QueryKeyword + '%') OR (I."RegisterCode" LIKE '%' + @prm_QueryKeyword + '%')))
+	      ) T
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1) OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."#prm_SortField" #prm_SortOrder
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>select_AgenciesShort</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Code", A."Name" AS "AgencyName", A."Status"
+      FROM "Agencies" A
+      WHERE (A."ID_Bursary" = @prm_ID_Bursary) 
+      AND ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0)
+      AND ((@prm_Status = '') OR (A."Status" = @prm_Status))
+    </SQL>
+  </Agencies>
+  
+  <Agencies>
+    <ID>select_WebAgencies_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Name" AS "Agency Name", ADR."StreetAddress" AS "Address", ADR."City", 
+      /*I."FiscalCode", I."RegisterCode", I."CompanyName",*/
+      I."Phone", I."Mobile", I."Fax", I."Email", I."Website"      
+      FROM "Agencies" A
+      LEFT JOIN "Identities" I ON (A."ID" = I."ID_Agency")
+      LEFT JOIN "Addresses" ADR ON (I."ID_Address" = ADR."ID")
+      WHERE (A."ID_Bursary" = @prm_ID_Bursary) AND ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0)
+      AND (A."Status" = 'active')
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>select_WebAgencies_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Name" AS "Nume Agentie", ADR."StreetAddress" AS "Adresa", ADR."City" AS "Oras",
+      /*I."FiscalCode", I."RegisterCode", I."CompanyName",*/
+      I."Phone" AS "Telefon", I."Mobile" AS "Tel. Mobil", I."Fax", I."Email", I."Website"
+      FROM "Agencies" A
+      LEFT JOIN "Identities" I ON (A."ID" = I."ID_Agency")
+      LEFT JOIN "Addresses" ADR ON (I."ID_Address" = ADR."ID")
+      WHERE (A."ID_Bursary" = @prm_ID_Bursary) AND ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0)
+      AND (A."Status" = 'active')
+    </SQL>
+  </Agencies>
+
+  <Brokers>
+    <ID>select_Contacts</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT B.*, I."SocialCode", I."IdentityCard", I."Title", I."FirstName", I."LastName", 
+      I."Phone", I."Mobile", I."Fax", I."Email", U."LoginName", U."isActive"
+      FROM "Brokers" B
+      LEFT JOIN "Identities" I ON (B."ID" = I."ID_Broker")
+      LEFT JOIN "Users" U ON (B."ID_User" = U."ID")
+      WHERE (B."ID_Agency" = @prm_ID_Agency) AND ((B."isBroker" = @prm_isBroker) OR (@prm_isBroker = -1))
+      AND (B."isDeleted" = 0) AND ((U."ID" IS NULL) OR ((U."ID" IS NOT NULL) AND (U."isDeleted" = 0)))
+    </SQL>
+  </Brokers>
+
+  <!--<Agencies>
+    <ID>select_AgenciesDetailed</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Code", A."Name" AS "AgencyName", I."FiscalCode", I."RegisterCode", I."CompanyName"
+      FROM "Agencies" A
+      LEFT JOIN "Identities" I ON (A."ID" = I."ID_Agency")
+      WHERE ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0)
+    </SQL>
+  </Agencies>-->
+
+  <Agencies>
+    <ID>select_AgencyRings</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT R.*
+      FROM "Rings" R
+      LEFT JOIN "RingsXAgencies" RXA ON (R."ID" = RXA."ID_Ring")
+      WHERE ((RXA."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (RXA."isDeleted" = 0)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>select_AgencyClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      <!--SELECT C.*, I."FiscalCode", I."RegisterCode", I."CompanyName"
+      FROM "Clients" C
+      LEFT JOIN "AgenciesXClients" AXC ON (C."ID" = AXC."ID_Client")
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client")
+      WHERE ((AXC."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (AXC."isDeleted" = 0)-->
+
+      SELECT C.*, I."FiscalCode", I."RegisterCode", I."CompanyName",
+        IsNull(I."Phone", '') AS "Phone",
+        IsNull(I."Mobile", '') AS "Mobile",
+        IsNull(I."Fax", '') AS "Fax",
+        IsNull(I."Email", '') AS "Email",
+        IsNull(I."Website", '') AS "Website",
+        IsNull(ADDR."StreetAddress", '') AS "StreetAddress",
+        IsNull(ADDR."City", '') AS "City",
+        IsNull(ADDR."ID_County", 0) AS "ID_County",
+        IsNull(ADDR."PostalCode", '') AS "PostalCode"
+      FROM "Clients" C
+      LEFT JOIN "Agencies" A ON (C."ID_Agency" = A."ID")
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client")
+      LEFT JOIN "Addresses" ADDR ON (I."ID_Address" = ADDR."ID")
+      WHERE ((A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (A."isDeleted" = 0) AND (C."isDeleted" = 0)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>select_AgencyAssets</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Name" AS "AssetName", A."Code" AS "AssetCode", A."isActive" AS "AssetActive", A."Description" AS "AssetDescription", A."ID_InitialOrder",
+      R."Name" AS "RingName", R."isActive" AS "RingActive",
+      AT."Name" AS "AssetTypeName", AT."Description" AS "AssetTypeDescription",
+      AG."Name" AS "AgencyName",
+      C."Name" AS "ClientName",
+      CASE O."Direction" WHEN 0 THEN 'C' ELSE 'V' END AS "Sens",
+      O."Quantity", O."Price", O."ExpirationDate", O."PartialFlag",
+      CU."Name" AS "Currency", CP."Name" AS "PaymentCurrency", MU."Name" AS "MeasuringUnit", A."Visibility", A."isSpotContract", A."SpotQuotation",
+      ASS."StartDate", ASS."EndDate", ASS."PreOpeningTime", ASS."OpeningTime", ASS."PreClosingTime", ASS."ClosingTime", ASS."isElectronicSession", ASS."launchAutomatically",
+      ASS."QuantityStepping", ASS."MinQuantity", ASS."PriceStepping", ASS."MaxPriceVariation", ASS."MinPrice", ASS."MaxPrice",
+      TP."DeltaT", TP."DeltaT1", TP."SellWarrantyPercent", TP."SellWarrantyMU", TP."SellWarrantyFixed", TP."BuyWarrantyPercent", TP."BuyWarrantyMU", TP."BuyWarrantyFixed"
+
+      FROM "Assets" A
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID")
+      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Currencies" CU ON (A."ID_Currency" = CU."ID")
+      LEFT JOIN "Currencies" CP ON (A."ID_PaymentCurrency" = CP."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "AssetSchedules" ASS ON (A."ID" = ASS."ID_Asset")
+      LEFT JOIN "TradeParameters" TP ON (ASS."ID" = TP."ID_AssetSchedule")
+      WHERE ((O."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1)) AND (ASS."StartDate" BETWEEN @prm_StartDate AND @prm_EndDate)
+      ORDER BY O."Date" ASC
+    </SQL>
+  </Agencies>
+
+  <Clients>
+    <ID>select_ClientsDetailed</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM
+      (
+	      SELECT ROW_NUMBER() OVER (ORDER BY T."#prm_SortField" #prm_SortOrder) AS "row", T.* FROM
+	      (
+		      SELECT (SELECT Count(*) FROM "Clients") AS "count", C."ID", C."ID_Agency", C."Code", C."Name" AS "ClientName", C."isHouse", A."Status",
+		      I."FiscalCode", I."RegisterCode", I."CompanyName", I."FirstName", I."LastName",
+		      I."Phone", I."Fax", I."Mobile", I."Email", I."Website",
+		      ADR."StreetAddress", ADR."City", ADR."ID_County", ADR."PostalCode"
+		      FROM "Clients" C
+		      LEFT JOIN "Agencies" A ON (C."ID_Agency" = A."ID")
+		      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client")
+		      LEFT JOIN "Addresses" ADR ON (I."ID_Address" = ADR."ID")
+		      WHERE (C."ID_Bursary" = @prm_ID_Bursary) AND ((C."ID" = @prm_ID_Client) OR (@prm_ID_Client = -1))
+		      AND (C."isDeleted" = 0) AND ((A."Status" = @prm_Status) OR (@prm_Status = 'any'))
+		      AND ((@prm_QueryKeyword = '') OR ((C."Code" LIKE '%' + @prm_QueryKeyword + '%') OR (C."Name" LIKE '%' + @prm_QueryKeyword + '%') 
+		      OR (A."Status" LIKE '%' + @prm_QueryKeyword + '%') OR (I."FiscalCode" LIKE '%' + @prm_QueryKeyword + '%') 
+		      OR (I."RegisterCode" LIKE '%' + @prm_QueryKeyword + '%')))
+	      ) T
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1) OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."#prm_SortField" #prm_SortOrder
+    </SQL>
+  </Clients>
+
+  <Clients>
+    <ID>select_ClientsShort</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C."ID", C."ID_Agency", C."Code", C."Name" AS "ClientName", C."isHouse", A."Status"
+      FROM "Clients" C
+      LEFT JOIN "Agencies" A ON (C."ID_Agency" = A."ID")
+      WHERE (C."ID_Bursary" = @prm_ID_Bursary) AND ((C."ID" = @prm_ID_Client) OR (@prm_ID_Client = -1))
+      AND (C."isDeleted" = 0) AND ((A."Status" = @prm_Status) OR (@prm_Status = 'any'))
+    </SQL>
+  </Clients>
+
+  <Clients>
+    <ID>select_BrokerClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID_Client", "Code", "Name", "canBuy", "canSell", "Credit" - "Debit" AS "AvailableWarranty" FROM
+      (
+	      SELECT "ID_Client", "Code", "Name", 
+	      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy", 
+	      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell",
+	      (
+		      SELECT IsNull(SUM(TC."Sum" * TC."Percent" * TC."ExchangeRate"), 0) AS "Credit" FROM
+		      (
+			      SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+			      FROM "BO_Operations" OP
+			      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+			      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+			      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+			      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+			      WHERE (OPT."Code" = 'CRED_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+		      ) TC
+	      ) AS "Credit",
+	      (
+		      SELECT TD."Debit" + TL."Locked" AS "Debit" FROM
+		      (
+			      SELECT IsNull(SUM(OPDP."Sum" * OPDP."Percent" * OPDP."ExchangeRate"), 0) AS "Debit"
+			      --SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+			      FROM "BO_Operations" OP
+			      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+			      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+			      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+			      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+			      WHERE (OPT."Code" = 'DEB_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+		      ) TD
+		      LEFT JOIN
+		      (
+			      SELECT IsNull(SUM(OPDA."Amount"), 0) AS "Locked"
+			      FROM "BO_Operations" OP
+			      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+			      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+			      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+			      WHERE (OPT."Code" = 'LOCK_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+			      AND (OPDA."ID_Order" != @prm_ID_Order)
+		      ) TL ON (1 = 1)
+	      ) AS "Debit"
+	      FROM
+	      (
+		      SELECT C."ID" AS "ID_Client", C."Code", C."Name", 
+		      ~O."Direction" AS "canBuy", O."Direction" AS "canSell"
+		      FROM "Assets" A
+		      RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+		      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+		      LEFT JOIN "Brokers" B ON (O."ID_Agency" = B."ID_Agency") AND (B."isDeleted" = 0)
+		      WHERE (A."ID" = @prm_ID_Asset) AND ((B."ID" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+
+		      UNION ALL
+
+		      SELECT C."ID" AS "ID_Client", C."Code", C."Name", AXC."canBuy", AXC."canSell" FROM "AssetsXClients" AXC
+		      LEFT JOIN "Clients" C ON (AXC."ID_Client" = C."ID")
+		      LEFT JOIN "Agencies" A ON (C."ID_Agency" = A."ID")
+		      LEFT JOIN "Brokers" B ON (A."ID" = B."ID_Agency") AND (B."isDeleted" = 0)
+		      WHERE (AXC."ID_Asset" = @prm_ID_Asset) 
+		      AND ((B."ID" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+	      ) T
+	      GROUP BY T."ID_Client", T."Code", T."Name"
+      ) T
+    </SQL>
+  </Clients>
+
+  <Bursaries>
+    <ID>getBursaries</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Bursaries"
+    </SQL>
+  </Bursaries>
+
+  <Markets>
+    <ID>getMarkets</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Markets"
+    </SQL>
+  </Markets>
+
+  <Markets>
+    <ID>select_MarketsbyID_Bursary</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Markets" WHERE "ID_Bursary" = @prm_ID_Bursary
+    </SQL>
+  </Markets>
+  
+    <!-- modified by Alex P on 20140828, added isActive condition-->
+  <Rings>
+    <ID>select_RingsbyID_Market</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DISTINCT R.*,
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 1 WHEN 0 THEN 0 ELSE 1 END) AS "daySunday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 2 WHEN 0 THEN 0 ELSE 1 END) AS "dayMonday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 4 WHEN 0 THEN 0 ELSE 1 END) AS "dayTuesday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 8 WHEN 0 THEN 0 ELSE 1 END) AS "dayWednesday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 16 WHEN 0 THEN 0 ELSE 1 END) AS "dayThursday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 32 WHEN 0 THEN 0 ELSE 1 END) AS "dayFriday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 64 WHEN 0 THEN 0 ELSE 1 END) AS "daySaturday"
+      FROM "Markets" M
+      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+
+      LEFT JOIN "RingSessions" RS ON (R."ID" = RS."ID_Ring") AND (CONVERT(VARCHAR, RS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+      LEFT JOIN "Assets" A ON (R."ID" = A."ID_Ring") AND (A."isActive" = 1) AND (A."Visibility" IN ('public', 'terminated'))
+      LEFT JOIN "AssetSessions" AAS ON (A."ID" = AAS."ID_Asset") AND (CONVERT(VARCHAR, AAS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary) 
+      AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((R."ID" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((R."isActive" = 1) OR (@prm_AnyStatus = 1))
+      AND (R."isDeleted" = 0)
+      AND (((A."ID" IS NOT NULL) AND (AAS."Status" IS NOT NULL)) OR (@prm_All = 1))
+    </SQL>
+    <!--<SQL>
+      SELECT R.* FROM "Markets" M
+      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary) 
+      AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((R."isActive" = 1) OR (@prm_AnyStatus = 1))
+      AND (R."isDeleted" = 0)
+    </SQL>-->
+  </Rings>
+
+  <Rings>
+    <ID>select_WebRings_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM
+      (
+        SELECT DISTINCT R."ID", --R."Code", 
+        CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRN."Value_EN" ELSE R."Name" END AS "Name",
+        CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRD."Value_EN" ELSE R."Description" END AS "Descriere"
+        FROM "Markets" M
+        LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+
+        LEFT JOIN "RingSessions" RS ON (R."ID" = RS."ID_Ring") AND (CONVERT(VARCHAR, RS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+        --LEFT JOIN "Assets" A ON (R."ID" = A."ID_Ring") AND (A."isActive" = 1)
+        LEFT JOIN "Translations" TRN ON (R."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+        LEFT JOIN "Translations" TRD ON (R."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+
+        WHERE (M."ID_Bursary" = @prm_ID_Bursary) 
+        AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+        AND ((R."ID" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+        AND ((R."isActive" = 1) AND (R."isDeleted" = 0) /*AND (A."ID" IS NOT NULL)*/)
+      ) T
+      ORDER BY T."Name"
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_WebRings_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM
+      (
+        SELECT DISTINCT R."ID", --R."Code" AS "Cod Ring", 
+        CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRN."Value_RO" ELSE R."Name" END AS "Denumire Ring",
+        CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRD."Value_RO" ELSE R."Description" END AS "Descriere"
+        FROM "Markets" M
+        LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+
+        LEFT JOIN "RingSessions" RS ON (R."ID" = RS."ID_Ring") AND (CONVERT(VARCHAR, RS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+        --LEFT JOIN "Assets" A ON (R."ID" = A."ID_Ring") AND (A."isActive" = 1)
+        LEFT JOIN "Translations" TRN ON (R."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+        LEFT JOIN "Translations" TRD ON (R."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+
+        WHERE (M."ID_Bursary" = @prm_ID_Bursary) 
+        AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+        AND ((R."ID" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+        AND ((R."isActive" = 1) AND (R."isDeleted" = 0) /*AND (A."ID" IS NOT NULL)*/)
+      ) T
+      ORDER BY T."Denumire Ring"
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_WebRingDetails_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRN."Value_EN" ELSE R."Name" END AS "Name",
+      CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRD."Value_EN" ELSE R."Description" END AS "Description"
+      FROM "Rings" R
+      LEFT JOIN "Translations" TRN ON (R."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (R."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (R."ID" = @prm_ID) AND (R."isActive" = 1) AND (R."isDeleted" = 0)
+    </SQL>
+  </Rings>
+  
+  <Rings>
+    <ID>select_WebRingDetails_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRN."Value_RO" ELSE R."Name" END AS "Name",
+      CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRD."Value_RO" ELSE R."Description" END AS "Description"
+      FROM "Rings" R
+      LEFT JOIN "Translations" TRN ON (R."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (R."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (R."ID" = @prm_ID) AND (R."isActive" = 1) AND (R."isDeleted" = 0)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_RingAgencies</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A.*
+      FROM "Agencies" A
+      LEFT JOIN "RingsXAgencies" RXA ON (A."ID" = RXA."ID_Agency")
+      WHERE ((RXA."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring= -1)) AND (RXA."isDeleted" = 0)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_RingClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C."ID", C."Code", C."Name", RXC."ID_Ring", RXC."ID_Client", RXC."canBuy", RXC."canSell", I."FiscalCode", I."RegisterCode", I."CompanyName"
+      FROM "Clients" C
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client")
+      LEFT JOIN "RingsXClients" RXC ON (C."ID" = RXC."ID_Client")
+      WHERE ((RXC."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1)) AND (RXC."isDeleted" = 0) AND ((RXC."canBuy" = 1) OR (RXC."canSell" = 1))
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_RingAdministrators</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT RXU."ID_Ring", RXU."ID_User", U."LoginName" FROM "RingsXUsers" RXU
+      LEFT JOIN "Users" U ON (RXU."ID_User" = U."ID")
+      WHERE (RXU."ID_Ring" = @prm_ID_Ring)
+      AND (RXU."isDeleted" = 0) AND (U."isDeleted" = 0)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>select_RingWarrantyType</ID>
+    <SQLType>1</SQLType>
+    <!--AlexP-->
+    <SQL>
+      SELECT RXWT."ID_Ring", RXWT."ID_WarrantyType", WT."Name", WT."Code", WT."Name", WT."isAvailable4Period" , WT."isAvailable4Asset", WT."ID", RXWT."Priority"
+      FROM "RingsXWarrantyTypes" RXWT
+      LEFT JOIN "WarrantyTypes" WT ON (RXWT."ID_WarrantyType" = WT."ID")
+      WHERE (RXWT."ID_Ring" = @prm_ID_Ring) AND (RXWT."isDeleted" = 0) AND (WT."isDeleted" = 0)
+      ORDER BY RXWT."Priority"
+    </SQL>
+    <!--<SQL>
+      SELECT RXWT."ID_Ring", RXWT."ID_WarrantyType", WT."Name", WT."Code", WT."Name", WT."isAvailable4Period" , WT."isAvailable4Asset", WT."ID"
+      FROM "RingsXWarrantyTypes" RXWT
+      LEFT JOIN "WarrantyTypes" WT ON (RXWT."ID_WarrantyType" = WT."ID")
+      WHERE (RXWT."ID_Ring" = @prm_ID_Ring) AND (RXWT."isDeleted" = 0) AND (WT."isDeleted" = 0)
+    </SQL>-->
+  </Rings>
+
+  <Rings>
+    <ID>select_AssetWarrantyType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT AXWT."ID_Asset", AXWT."ID_WarrantyType", WT."Name", WT."Code", WT."Name", WT."isAvailable4Period" , WT."isAvailable4Asset", WT."ID", AXWT."Priority"
+      FROM "AssetsXWarrantyTypes" AXWT
+      LEFT JOIN "WarrantyTypes" WT ON (AXWT."ID_WarrantyType" = WT."ID")
+      WHERE (AXWT."ID_Asset" = @prm_ID_Asset) AND (WT."isDeleted" = 0) AND (AXWT."isDeleted") = 0
+      ORDER BY AXWT."Priority"
+      <!--SELECT DISTINCT "ID_WarrantyType" AS "ID" FROM (
+        SELECT RXWT."ID_WarrantyType" AS "ID_WarrantyType"
+        FROM "RingsXWarrantyTypes" RXWT
+        LEFT JOIN "WarrantyTypes" WT ON (RXWT."ID_WarrantyType" = WT."ID")
+        WHERE (RXWT."isDeleted" = 0) AND
+        (RXWT."ID_Ring" = (SELECT "ID_Ring" FROM "Assets" WHERE "ID" = @prm_ID_Asset))
+        AND RXWT."ID_WarrantyType" NOT IN (
+          SELECT AXWT."ID_WarrantyType" AS "ID_WarrantyType"
+          FROM "AssetsXWarrantyTypes" AXWT
+          LEFT JOIN "WarrantyTypes" WT ON (AXWT."ID_WarrantyType" = WT."ID")
+          WHERE (AXWT."isDeleted" = 1) AND (AXWT."ID_Asset" = @prm_ID_Asset)
+        )
+        UNION ALL
+        SELECT AXWT."ID_WarrantyType" AS "ID_WarrantyType"
+        FROM "AssetsXWarrantyTypes" AXWT
+        LEFT JOIN "WarrantyTypes" WT ON (AXWT."ID_WarrantyType" = WT."ID")
+        WHERE (AXWT."isDeleted" = 0)  AND (AXWT."ID_Asset" = @prm_ID_Asset)
+      ) ASSET_WARRANTYTYPES-->
+    </SQL>
+  </Rings>
+  
+  <Rings>
+    <ID>select_AssetClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "Code", "Name", "ID_Asset", "ID_Client", "ID_Agency",
+      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy",
+      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell",
+      "FiscalCode", "RegisterCode", "CompanyName" FROM
+      (
+        SELECT C."Code", C."Name", A."ID" AS "ID_Asset", C."ID" AS "ID_Client",
+        ~O."Direction" AS "canBuy", O."Direction" AS "canSell",
+        I."FiscalCode", I."RegisterCode", I."CompanyName", C."ID_Agency"
+        FROM "Assets" A
+        RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+        LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+        LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") --AND (I."ID_Agency" = 0)
+        WHERE A."ID" = @prm_ID_Asset
+
+        UNION ALL
+
+        SELECT C."Code", C."Name", AXC."ID_Asset", AXC."ID_Client",
+        AXC."canBuy", AXC."canSell", I."FiscalCode", I."RegisterCode", I."CompanyName", C."ID_Agency"
+        FROM "Clients" C
+        LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") --AND (I."ID_Agency" = 0)
+        LEFT JOIN "AssetsXClients" AXC ON (C."ID" = AXC."ID_Client")
+        WHERE ((AXC."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+        AND (AXC."isDeleted" = 0) AND ((AXC."canBuy" = 1) OR (AXC."canSell" = 1))
+      ) T
+      GROUP BY T."Code", T."Name", T."ID_Asset", T."ID_Client", T."FiscalCode", T."RegisterCode", T."CompanyName", T."ID_Agency"
+    </SQL>
+    <!--<SQL>
+      SELECT "Code", "Name", "ID_Asset", "ID_Client", 
+      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy", 
+      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell", 
+      "FiscalCode", "RegisterCode", "CompanyName" FROM
+      (
+	      SELECT C."Code", C."Name", A."ID" AS "ID_Asset", C."ID" AS "ID_Client",
+	      ~O."Direction" AS "canBuy", O."Direction" AS "canSell",
+	      I."FiscalCode", I."RegisterCode", I."CompanyName"
+	      FROM "Assets" A
+	      RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+	      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+	      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") /*AND (I."ID_Agency" = 0)*/
+	      WHERE A."ID" = @prm_ID_Asset
+
+	      UNION ALL
+
+	      SELECT C."Code", C."Name", AXC."ID_Asset", AXC."ID_Client", 
+	      AXC."canBuy", AXC."canSell", I."FiscalCode", I."RegisterCode", I."CompanyName"
+	      FROM "Clients" C
+	      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") /*AND (I."ID_Agency" = 0)*/
+	      LEFT JOIN "AssetsXClients" AXC ON (C."ID" = AXC."ID_Client")
+	      WHERE ((AXC."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1)) 
+	      AND (AXC."isDeleted" = 0) AND ((AXC."canBuy" = 1) OR (AXC."canSell" = 1))
+      ) T
+      GROUP BY T."Code", T."Name", T."ID_Asset", T."ID_Client", T."FiscalCode", T."RegisterCode", T."CompanyName"
+    </SQL>-->
+    <!--<SQL>
+      SELECT C."Code", C."Name", "ClientsRights".* FROM
+      (
+      SELECT RXC."ID_Client", RXC."canBuy", RXC."canSell", RXC."isDeleted", 'Ring' AS "RightsPer"
+      FROM "RingsXClients" RXC
+      WHERE RXC."ID_Client" NOT IN
+      (
+      SELECT "ID_Client"
+      FROM "AssetsXClients" AXC
+      WHERE AXC."ID_Asset" = @prm_ID_Asset
+      )
+      UNION ALL
+      SELECT AXC."ID_Client", AXC."canBuy", AXC."canSell", AXC."isDeleted", 'Asset' AS "RightsPer"
+      FROM "AssetsXClients" AXC
+      WHERE "ID_Asset" = @prm_ID_Asset) "ClientsRights"
+      LEFT JOIN "Clients" C ON ("ClientsRights"."ID_Client" = C."ID")
+    </SQL>-->
+  </Rings>
+
+  <!--<Assets>
+    <ID>select_AssetsbyID_MarketandID_Ring</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Assets" 
+      WHERE ("ID_Market" = @prm_ID_Market) AND ("ID_Ring" = @prm_ID_Ring)
+    </SQL>
+  </Assets>-->
+
+  <Assets>
+    <ID>select_AssetsbyID_MarketandID_Ring</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * INTO #tmp FROM
+      (
+	      SELECT A.*,
+	      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN CASE WHEN @prm_Language = 'EN' THEN TAName."Value_EN" ELSE TAName."Value_RO" END ELSE A."Name" END AS "NameTR",
+	      AG."ID" AS "ID_Agency", AG."Name" AS "AgencyName", C."ID" AS "ID_Client", C."Name" AS "ClientName",
+	      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+	      O."ExpirationDate", IsNull((SELECT TOP 1 "isElectronicSession" FROM "AssetSchedules" ASCH WHERE ASCH."ID_Asset" = A."ID"), 0) AS "isElectronicSession"--,
+	      FROM
+	      (
+		      SELECT A.*, IsNull(ASS."ID_AssetSession", 0) AS "ID_AssetSession", IsNull(ASS."Status", '') AS "Status"
+		      FROM "Markets" M
+		      LEFT JOIN "Assets" A ON (M."ID" = A."ID_Market") AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+		      LEFT JOIN
+		      (
+			      SELECT "ID" AS "ID_AssetSession", "ID_Asset", "Status" FROM "AssetSessions" ASS
+			      WHERE (CONVERT(VARCHAR, ASS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+			      AND ((ASS."Status" IS NOT NULL) OR (@prm_All = 1))
+		      ) ASS ON (A."ID" = ASS."ID_Asset")
+		      WHERE (M."ID_Bursary" = @prm_ID_Bursary) AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+		      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+		      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+		      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+		      AND (((A."Visibility" IN ('public', 'terminated')) AND (A."isActive" = 1)) OR (@prm_AnyStatus = 1))
+		      AND ((ASS."ID_AssetSession" IS NOT NULL) OR (@prm_All = 1))
+	      ) A
+	      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+	      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+	      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+	      LEFT JOIN "Translations" TAName ON (A."Name" = CAST(TAName."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      ) T
+      WHERE ((@prm_QueryKeyword = '') OR ((T."Code" LIKE '%' + @prm_QueryKeyword + '%') OR (T."NameTR" LIKE '%' + @prm_QueryKeyword + '%')))
+
+      SELECT T.* FROM
+      (
+	      SELECT ROW_NUMBER() OVER (ORDER BY "ID" ASC) AS "row", (SELECT COUNT(*) FROM #tmp) AS "count", * FROM #tmp
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1)
+      OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."ID" ASC
+
+      DROP TABLE #tmp
+    </SQL>
+  </Assets>
+  
+  <!--modified by Alex P no 20140825, added IsDeleted condition-->
+  <Assets>
+    <ID>select_AssetsDetailedbyID_MarketandID_Ring</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * INTO #tmp FROM 
+      (
+	      SELECT A.*,
+	      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN CASE WHEN @prm_Language = 'EN' THEN TAName."Value_EN" ELSE TAName."Value_RO" END ELSE A."Name" END AS "NameTR",
+	      CASE WHEN A."Description" LIKE 'fld_Asset_Description%' THEN CASE WHEN @prm_Language = 'EN' THEN TADesc."Value_EN" ELSE TADesc."Value_RO" END ELSE A."Description" END AS "DescriptionTR",
+	      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+	      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+	      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+	      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+	      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+	      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+	      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+	      IsNull(TP."DeltaT", 0) AS "DeltaT",
+	      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+	      AG."ID" AS "ID_Agency", AG."Name" AS "AgencyName", C."ID" AS "ID_Client", C."Name" AS "ClientName",
+	      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+	      O."ExpirationDate", IsNull((SELECT TOP 1 "isElectronicSession" FROM "AssetSchedules" ASCH WHERE ASCH."ID_Asset" = A."ID"), 0) AS "isElectronicSession",
+	      AD."Instructions_RO", AD."Instructions_EN", AD."DeliveryTerm", AD."DeliveryConditions", AD."PackingMethod", AD."PaymentMethod", AD."ContractTerm", AD."WarrantyMethod",
+	      IsNull(ASS."Status", '') AS "Status"
+	      FROM
+	      (
+		      SELECT A.*, IsNUll((SELECT TOP 1 "ID" FROM "AssetSessions" ASS WHERE (A."ID" = ASS."ID_Asset") AND (CONVERT(VARCHAR, ASS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))), 0) AS "ID_AssetSession"
+		      FROM "Markets" M
+		      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+		      LEFT JOIN "Assets" A ON (M."ID" = A."ID_Market") AND (R."ID" = A."ID_Ring")
+		      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+		      AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+		      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+		      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+		      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+		      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+		      AND (((A."Visibility" IN ('public', 'terminated')) AND (A."isActive" = 1)) OR (@prm_AnyStatus = 1))
+	      ) A
+	      LEFT JOIN "AssetSessions" ASS ON (A."ID_AssetSession" = ASS."ID")
+	      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+	      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+	      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+	      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+	      LEFT JOIN "AssetDetails" AD ON (A."ID" = AD."ID_Asset")
+	      LEFT JOIN "Translations" TAName ON (A."Name" = CAST(TAName."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+	      LEFT JOIN "Translations" TADesc ON (A."Name" = CAST(TADesc."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+	      WHERE (ASS."Status" IS NOT NULL) OR (@prm_All = 1)
+      ) T
+      WHERE ((@prm_QueryKeyword = '') OR ((T."Code" LIKE '%' + @prm_QueryKeyword + '%') OR (T."NameTR" LIKE '%' + @prm_QueryKeyword + '%')))
+
+      SELECT T.* FROM
+      (
+	      SELECT ROW_NUMBER() OVER (ORDER BY "#prm_SortField" #prm_SortOrder) AS "row", (SELECT COUNT(*) FROM #tmp) AS "count", * FROM #tmp
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1)
+      OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."#prm_SortField" #prm_SortOrder
+
+      DROP TABLE #tmp      
+    </SQL>
+    <!--<SQL>
+      SELECT T.* FROM
+      (
+      SELECT ROW_NUMBER() OVER (ORDER BY T."#prm_SortField" #prm_SortOrder) AS "row", T.*, IsNull(ASS."Status", '') AS "Status" FROM
+      (
+      SELECT (SELECT COUNT(*) FROM "Assets") AS "count", A.*,
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN CASE WHEN @prm_Language = 'EN' THEN TAName."Value_EN" ELSE TAName."Value_RO" END ELSE A."Name" END AS "NameTR",
+      CASE WHEN A."Description" LIKE 'fld_Asset_Description%' THEN CASE WHEN @prm_Language = 'EN' THEN TADesc."Value_EN" ELSE TADesc."Value_RO" END ELSE A."Description" END AS "DescriptionTR",
+      IsNUll((SELECT TOP 1 "ID" FROM "AssetSessions" ASS WHERE (A."ID" = ASS."ID_Asset") AND (CONVERT(VARCHAR, ASS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))), 0) AS "ID_AssetSession",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      AG."ID" AS "ID_Agency", AG."Name" AS "AgencyName", C."ID" AS "ID_Client", C."Name" AS "ClientName",
+      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+      O."ExpirationDate", IsNull((SELECT TOP 1 "isElectronicSession" FROM "AssetSchedules" ASCH WHERE ASCH."ID_Asset" = A."ID"), 0) AS "isElectronicSession",
+      AD."Instructions_RO", AD."Instructions_EN", AD."DeliveryTerm", AD."DeliveryConditions", AD."PackingMethod", AD."PaymentMethod", AD."ContractTerm", AD."WarrantyMethod"
+      FROM "Assets" A
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      LEFT JOIN "AssetDetails" AD ON (A."ID" = AD."ID_Asset")
+      /* translations */
+      LEFT JOIN "Translations" TAName ON (A."Name" = CAST(TAName."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TADesc ON (A."Name" = CAST(TADesc."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((A."ID_Market" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND (((A."Visibility" IN ('public', 'terminated')) AND (A."isActive" = 1)) OR (@prm_AnyStatus = 1))
+      ) T
+      LEFT JOIN "AssetSessions" ASS ON (T."ID_AssetSession" = ASS."ID")
+      WHERE (ASS."Status" IS NOT NULL) OR (@prm_All = 1) AND
+      ((@prm_QueryKeyword = '') OR ((T."Code" LIKE '%' + @prm_QueryKeyword + '%') OR (T."NameTR" LIKE '%' + @prm_QueryKeyword + '%')))
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1)
+      OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."#prm_SortField" #prm_SortOrder
+    </SQL>-->
+    <!--<SQL>
+      SELECT T.*, IsNull(ASS."Status", '') AS "Status" FROM
+      (
+      SELECT A.*, IsNUll((SELECT TOP 1 "ID" FROM "AssetSessions" ASS WHERE (A."ID" = ASS."ID_Asset") AND (CONVERT(VARCHAR, ASS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))), 0) AS "ID_AssetSession",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance", 
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      AG."ID" AS "ID_Agency", C."ID" AS "ID_Client", 
+      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+      O."ExpirationDate", IsNull((SELECT TOP 1 "isElectronicSession" FROM "AssetSchedules" ASCH WHERE ASCH."ID_Asset" = A."ID"), 0) AS "isElectronicSession"
+      FROM "Assets" A
+      /*LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")*/
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((A."ID_Market" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND (((A."Visibility" IN ('public', 'terminated')) AND (A."isActive" = 1)) OR (@prm_AnyStatus = 1))
+      ) T
+      LEFT JOIN "AssetSessions" ASS ON (T."ID_AssetSession" = ASS."ID")
+      WHERE (ASS."Status" IS NOT NULL) OR (@prm_All = 1)
+    </SQL>-->
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssets_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Code", 
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN TRN."Value_EN" ELSE A."Name" END AS "Name", 
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRR."Value_EN" ELSE R."Name" END AS "Ring", 
+      CASE IsNull(O."Direction", 2) WHEN 0 THEN 'Buy' WHEN 1 THEN 'Sell' ELSE '' END AS "Direction",
+      IsNull(O."Quantity", 0) AS "Quantity", 
+      CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit_Name%' THEN TM."Value_EN" ELSE MU."Name" END AS "MU", 
+      O."ExpirationDate" AS "Expiration Date"
+      --CAST(CONVERT(VARCHAR, IsNull(dbo.GetLastAssetSession(A."ID"), IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate"))), 121) AS DATETIME) AS "Expiration Date"
+      FROM "Assets" A
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Translations" TRN ON (A."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRR ON (R."Name" = CAST(TRR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TM ON (MU."Name" = CAST(TM."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((A."ID_Market" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND (A."isActive" = 1) AND (A."Visibility" IN ('public', 'terminated'))
+      AND 
+      (
+      (
+      ((@prm_Date_Start = '') OR (@prm_Date_End = ''))
+      AND (O."ExpirationDate" >= CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+      ) OR (
+      (@prm_Date_Start != '') AND (@prm_Date_End != '')
+      AND (O."ExpirationDate" BETWEEN @prm_Date_Start AND @prm_Date_End)
+      )
+      )
+/*      (
+        (
+	      	((@prm_Date_Start = '') OR (@prm_Date_End = '')) 
+		      AND (IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate")) >= CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+		    ) OR (
+		      (@prm_Date_Start != '') AND (@prm_Date_End != '') 
+		      AND (IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate")) BETWEEN @prm_Date_Start AND @prm_Date_End)
+		    )
+      )*/
+      ORDER BY O."ExpirationDate"
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssets_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID", A."Code" AS "Cod",
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN TRN."Value_RO" ELSE A."Name" END AS "Denumire",
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRR."Value_RO" ELSE R."Name" END AS "Ring",
+      CASE IsNull(O."Direction", 2) WHEN 0 THEN 'Cumparare' WHEN 1 THEN 'Vanzare' ELSE '' END AS "Sens",
+      IsNull(O."Quantity", 0) AS "Cantitate",
+      CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit_Name%' THEN TM."Value_RO" ELSE MU."Name" END AS "MU",
+      CAST(CONVERT(VARCHAR, IsNull(dbo.GetLastAssetSession(A."ID"), IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate"))), 121) AS DATETIME) AS "Termen Valabilitate"
+      FROM "Assets" A
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Translations" TRN ON (A."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRR ON (R."Name" = CAST(TRR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TM ON (MU."Name" = CAST(TM."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((A."ID_Market" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((A."isDeleted" = 0) OR (A."isDeleted" is NULL))
+      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND (A."isActive" = 1) AND (A."Visibility" IN ('public', 'terminated'))
+      AND
+      (
+      (
+      ((@prm_Date_Start = '') OR (@prm_Date_End = ''))
+      AND (O."ExpirationDate" >= CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+      ) OR (
+      (@prm_Date_Start != '') AND (@prm_Date_End != '')
+      AND (O."ExpirationDate" BETWEEN @prm_Date_Start AND @prm_Date_End)
+      )
+      )
+/*      (
+      (
+      ((@prm_Date_Start = '') OR (@prm_Date_End = ''))
+      AND (IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate")) >= CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+      ) OR (
+      (@prm_Date_Start != '') AND (@prm_Date_End != '')
+      AND (IsNull(dbo.GetNextAssetSession(A."ID"), IsNull(dbo.GetPrevAssetSession(A."ID"), O."ExpirationDate")) BETWEEN @prm_Date_Start AND @prm_Date_End)
+      )
+      )*/
+      ORDER BY O."ExpirationDate"
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetDetails_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."Code",
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN TRN."Value_EN" ELSE A."Name" END AS "Name",
+      CASE WHEN A."Description" LIKE 'fld_Asset_Description%' THEN TRD."Value_EN" ELSE A."Description" END AS "Description",
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRR."Value_EN" ELSE R."Name" END AS "Ring",
+      IsNull(CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRRD."Value_EN" ELSE R."Description" END, '') AS "RingDescription",
+      CASE WHEN AT."Name" LIKE 'fld_AssetType_Name%' THEN TRATN."Value_EN" ELSE AT."Name" END AS "Asset Type",
+      IsNull(CASE WHEN AT."Description" LIKE 'fld_AssetType_Description%' THEN TRATD."Value_EN" ELSE AT."Description" END, '') AS "Asset Type Description",
+      IsNull(AG."Name", '-') AS "Agency", IsNull(C."Name", '-') AS "Initiator", CASE A."ID_InitialOrder" WHEN 0 THEN 'Free Trading' ELSE 'Auction' END AS "Procedure",
+      AD."Instructions_EN" AS "Instructions", AD."DeliveryTerm", AD."DeliveryConditions", AD."PackingMethod", AD."PaymentMethod", AD."ContractTerm", AD."WarrantyMethod",
+      IsNull(O."Quantity", '0') AS "Quantity", 
+      CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit_Name%' THEN TRMU."Value_EN" ELSE MU."Name" END AS "Measuring Unit",
+      CASE O."Direction" WHEN 0 THEN 'Buy' WHEN 1 THEN 'Sell' ELSE '-' END AS "Direction",
+      CASE WHEN CC."Name" LIKE '%fld_Currency_Name%' THEN TRC."Value_EN" ELSE CC."Name" END AS "Currency",  
+      CASE WHEN PC."Name" LIKE '%fld_Currency_Name%' THEN TRPC."Value_EN" ELSE PC."Name" END AS "PaymentCurrency", 
+      IsNull(dbo.GetLastAssetSession(A."ID"), GetDate()) AS "ExpirationDate",
+      CASE O."PartialFlag" WHEN 0 THEN 'Total' WHEN 1 THEN 'Partial' END AS "PartialFlag",
+      TP."BuyWarrantyFixed", TP."BuyWarrantyMU", TP."BuyWarrantyPercent",
+      TP."SellWarrantyFixed", TP."SellWarrantyMU", TP."SellWarrantyPercent"
+      FROM "Assets" A
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID")
+      LEFT JOIN "AssetDetails" AD ON (A."ID" = AD."ID_Asset")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Currencies" CC ON (A."ID_Currency" = CC."ID")
+      LEFT JOIN "Currencies" PC ON (A."ID_PaymentCurrency" = PC."ID")
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      LEFT JOIN "Translations" TRN ON (A."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (A."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRR ON (R."Name" = CAST(TRR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRRD ON (R."Description" = CAST(TRRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRATN ON (AT."Name" = CAST(TRATN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRATD ON (AT."Description" = CAST(TRATD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRC ON (CC."Name" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRPC ON (PC."Name" = CAST(TRPC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRMU ON (MU."Name" = CAST(TRMU."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (A."ID" = @prm_ID)
+    </SQL>
+  </Assets>
+  
+  <Assets>
+    <ID>select_WebAssetDetails_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."Code",
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN TRN."Value_RO" ELSE A."Name" END AS "Name",
+      CASE WHEN A."Description" LIKE 'fld_Asset_Description%' THEN TRD."Value_RO" ELSE A."Description" END AS "Description",
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN TRR."Value_RO" ELSE R."Name" END AS "Ring",
+      IsNull(CASE WHEN R."Description" LIKE 'fld_Ring_Description%' THEN TRRD."Value_RO" ELSE R."Description" END, '') AS "RingDescription",
+      CASE WHEN AT."Name" LIKE 'fld_AssetType_Name%' THEN TRATN."Value_RO" ELSE AT."Name" END AS "Asset Type",
+      IsNull(CASE WHEN AT."Description" LIKE 'fld_AssetType_Description%' THEN TRATD."Value_RO" ELSE AT."Description" END, '') AS "Asset Type Description",
+      IsNull(AG."Name", '-') AS "Agency", IsNull(C."Name", '-') AS "Initiator", CASE A."ID_InitialOrder" WHEN 0 THEN 'Dublu Competitiva' ELSE 'Simplu Competitiva' END AS "Procedure",
+      AD."Instructions_RO" AS "Instructions", AD."DeliveryTerm", AD."DeliveryConditions", AD."PackingMethod", AD."PaymentMethod", AD."ContractTerm", AD."WarrantyMethod",
+      IsNull(O."Quantity", '0') AS "Quantity", 
+      CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit_Name%' THEN TRMU."Value_RO" ELSE MU."Name" END AS "Measuring Unit",
+      CASE O."Direction" WHEN 0 THEN 'Cumparare' WHEN 1 THEN 'Vanzare' ELSE '-' END AS "Direction",
+      CASE WHEN CC."Name" LIKE '%fld_Currency_Name%' THEN TRC."Value_RO" ELSE CC."Name" END AS "Currency",  
+      CASE WHEN PC."Name" LIKE '%fld_Currency_Name%' THEN TRPC."Value_RO" ELSE PC."Name" END AS "PaymentCurrency", 
+      IsNull(dbo.GetLastAssetSession(A."ID"), GetDate()) AS "ExpirationDate",
+      CASE O."PartialFlag" WHEN 0 THEN 'Total' WHEN 1 THEN 'Partial' END AS "PartialFlag",
+      TP."BuyWarrantyFixed", TP."BuyWarrantyMU", TP."BuyWarrantyPercent",
+      TP."SellWarrantyFixed", TP."SellWarrantyMU", TP."SellWarrantyPercent"
+      FROM "Assets" A
+      LEFT JOIN "Rings" R ON (A."ID_Ring" = R."ID")
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID")
+      LEFT JOIN "AssetDetails" AD ON (A."ID" = AD."ID_Asset")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Agencies" AG ON (O."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Currencies" CC ON (A."ID_Currency" = CC."ID")
+      LEFT JOIN "Currencies" PC ON (A."ID_PaymentCurrency" = PC."ID")
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      LEFT JOIN "Translations" TRN ON (A."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (A."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRR ON (R."Name" = CAST(TRR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRRD ON (R."Description" = CAST(TRRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRATN ON (AT."Name" = CAST(TRATN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRATD ON (AT."Description" = CAST(TRATD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRC ON (CC."Name" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRPC ON (PC."Name" = CAST(TRPC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRMU ON (MU."Name" = CAST(TRMU."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (A."ID" = @prm_ID)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetDocuments_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT D."Name" AS "Document",
+      CASE WHEN IsNull(D."FileName", '') != '' THEN '&lt;a href="#prm_BaseURL' + CAST(D."ID" AS VARCHAR(50)) + '"&gt;' + D."FileName" + '&lt;/a&gt;'
+      ELSE '&lt;a href="#prm_BaseURL' + CAST(D."ID" AS VARCHAR(50)) + '"&gt;' + D."DocumentURL" + '&lt;/a&gt;'
+      END AS "File Name", D."DateCreated" AS "Date Created" FROM "Documents" D
+      WHERE (D."ID_Asset" = @prm_ID_Asset) AND (D."isPublic" = 1) AND (D."isDeleted" = 0)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetDocuments_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT D."Name" AS "Document",
+      CASE WHEN IsNull(D."FileName", '') != '' THEN '&lt;a href="#prm_BaseURL' + CAST(D."ID" AS VARCHAR(50)) + '"&gt;' + D."FileName" + '&lt;/a&gt;'
+      ELSE '&lt;a href="#prm_BaseURL' + CAST(D."ID" AS VARCHAR(50)) + '"&gt;' + D."DocumentURL" + '&lt;/a&gt;'
+      END AS "Nume Fisier", D."DateCreated" AS "Data Creare" FROM "Documents" D
+      WHERE (D."ID_Asset" = @prm_ID_Asset) AND (D."isPublic" = 1) AND (D."isDeleted" = 0)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetSessionHistory_EN</ID>
+    <SQLType>11</SQLType>
+    <SQL>
+      SELECT CONVERT(VARCHAR, ASS."Date", 102) AS "Session Date",
+      IsNull(ASS."PreOpeningTime", ASCH."PreOpeningTime") AS "T0", IsNull(ASS."OpeningTime", ASCH."OpeningTime") AS "T1",
+      IsNull(ASS."PreClosingTime", ASCH."PreClosingTime") AS "T2", IsNull(ASS."ClosingTime", ASCH."ClosingTime") AS "T3"
+      FROM "AssetSessions" ASS
+      LEFT JOIN "AssetSchedules" ASCH ON (ASS."ID_Asset" = ASCH."ID_Asset")
+      WHERE (ASS."ID_Asset" = @prm_ID_Asset)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetSessionHistory_RO</ID>
+    <SQLType>11</SQLType>
+    <SQL>
+      SELECT CONVERT(VARCHAR, ASS."Date", 102) AS "Data Sedinta",
+      IsNull(ASS."PreOpeningTime", ASCH."PreOpeningTime") AS "T0", IsNull(ASS."OpeningTime", ASCH."OpeningTime") AS "T1",
+      IsNull(ASS."PreClosingTime", ASCH."PreClosingTime") AS "T2", IsNull(ASS."ClosingTime", ASCH."ClosingTime") AS "T3"
+      FROM "AssetSessions" ASS
+      LEFT JOIN "AssetSchedules" ASCH ON (ASS."ID_Asset" = ASCH."ID_Asset")
+      WHERE (ASS."ID_Asset" = @prm_ID_Asset)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetQuotations_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      CASE WHEN T."AssetName" LIKE 'fld_Asset_Name%' THEN TRN."Value_EN" ELSE T."AssetName" END AS "Asset",
+      CONVERT(VARCHAR, T."Date", 102) AS "Date",
+      T."Quantity", 
+      CASE WHEN T."MeasuringUnit" LIKE '%fld_MeasuringUnit_Name%' THEN TRMU."Value_EN" ELSE T."MeasuringUnit" END AS "Measuring Unit", 
+      T."Quotation", 
+      CASE WHEN T."Currency" LIKE '%fld_Currency_Name%' THEN TRC."Value_EN" ELSE T."Currency" END AS "Currency"
+      FROM
+      (
+	      SELECT A."Name" AS "AssetName", ASS."Date", IsNull(SUM(T."Quantity"), 0) AS "Quantity", MU."Name" AS "MeasuringUnit", 
+	      CASE IsNull(SUM(T."Quantity"), 0) WHEN 0 THEN 0 ELSE IsNull(SUM(T."Quantity" * T."Price"), 0) / IsNull(SUM(T."Quantity"), 1) END AS "Quotation",
+	      C."Name" AS "Currency"
+	      FROM "AssetSessions" ASS
+	      LEFT JOIN "Assets" A ON (ASS."ID_Asset" = A."ID")
+	      LEFT JOIN "Transactions" T ON (ASS."ID_Asset" = T."ID_Asset") AND (ASS."ID" = T."ID_AssetSession")
+	      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+	      LEFT JOIN "Currencies" C ON (A."ID_Currency" = C."ID")
+	      WHERE ASS."ID_Asset" = @prm_ID_Asset
+	      GROUP BY A."Name", ASS."Date", MU."Name", C."Name"
+      ) T 
+      LEFT JOIN "Translations" TRN ON (T."AssetName" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRMU ON (T."MeasuringUnit" = CAST(TRMU."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRC ON (T."Currency" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE T."Quantity" != 0
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebAssetQuotations_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      CASE WHEN T."AssetName" LIKE 'fld_Asset_Name%' THEN TRN."Value_RO" ELSE T."AssetName" END AS "Activ",
+      CONVERT(VARCHAR, T."Date", 102) AS "Data",
+      T."Quantity" AS "Cantitate", 
+      CASE WHEN T."MeasuringUnit" LIKE '%fld_MeasuringUnit_Name%' THEN TRMU."Value_RO" ELSE T."MeasuringUnit" END AS "Unitate de Masura", 
+      T."Quotation" AS "Cotatie", 
+      CASE WHEN T."Currency" LIKE '%fld_Currency_Name%' THEN TRC."Value_RO" ELSE T."Currency" END AS "Moneda"
+      FROM
+      (
+	      SELECT A."Name" AS "AssetName", ASS."Date", IsNull(SUM(T."Quantity"), 0) AS "Quantity", MU."Name" AS "MeasuringUnit", 
+	      CASE IsNull(SUM(T."Quantity"), 0) WHEN 0 THEN 0 ELSE IsNull(SUM(T."Quantity" * T."Price"), 0) / IsNull(SUM(T."Quantity"), 1) END AS "Quotation",
+	      C."Name" AS "Currency"
+	      FROM "AssetSessions" ASS
+	      LEFT JOIN "Assets" A ON (ASS."ID_Asset" = A."ID")
+	      LEFT JOIN "Transactions" T ON (ASS."ID_Asset" = T."ID_Asset") AND (ASS."ID" = T."ID_AssetSession")
+	      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+	      LEFT JOIN "Currencies" C ON (A."ID_Currency" = C."ID")
+	      WHERE ASS."ID_Asset" = @prm_ID_Asset
+	      GROUP BY A."Name", ASS."Date", MU."Name", C."Name"
+      ) T 
+      LEFT JOIN "Translations" TRN ON (T."AssetName" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRMU ON (T."MeasuringUnit" = CAST(TRMU."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRC ON (T."Currency" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE T."Quantity" != 0
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebTodayQuotations_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      CASE WHEN T."AssetName" LIKE 'fld_Asset_Name%' THEN TRN."Value_EN" ELSE T."AssetName" END AS "Asset",
+      CONVERT(VARCHAR, T."Date", 102) AS "Date",
+      T."Quantity", T."MeasuringUnit" AS "MU", ROUND(T."Quotation", 2) AS "Quotation", T."Currency"
+      FROM
+      (
+	      SELECT A."Code" AS "AssetName", ASS."Date", IsNull(SUM(T."Quantity"), 0) AS "Quantity", MU."Code" AS "MeasuringUnit", 
+	      CASE IsNull(SUM(T."Quantity"), 0) WHEN 0 THEN 0 ELSE IsNull(SUM(T."Quantity" * T."Price"), 0) / IsNull(SUM(T."Quantity"), 1) END AS "Quotation",
+	      CASE WHEN C."Name" LIKE 'fld_Currency_Name%' THEN TRC."Value_EN" ELSE C."Name" END AS "Currency"
+	      FROM "Markets" M
+	      LEFT JOIN "Assets" A ON (M."ID" = A."ID_Market")
+	      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+	      LEFT JOIN "AssetSessions" ASS ON (A."ID" = ASS."ID_Asset")
+	      LEFT JOIN "Transactions" T ON (ASS."ID_Asset" = T."ID_Asset") AND (ASS."ID" = T."ID_AssetSession")
+	      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+	      LEFT JOIN "Currencies" C ON (A."ID_Currency" = C."ID")
+        LEFT JOIN "Translations" TRC ON (C."Name" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+	      WHERE (M."ID_Bursary" = 4)
+	      AND (ASS."Date" > CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+	      GROUP BY A."Code", ASS."Date", MU."Code", C."Name", TRC."Value_EN"
+      ) T 
+      LEFT JOIN "Translations" TRN ON (T."AssetName" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE T."Quantity" != 0
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_WebTodayQuotations_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT
+      CASE WHEN T."AssetName" LIKE 'fld_Asset_Name%' THEN TRN."Value_RO" ELSE T."AssetName" END AS "Activ",
+      CONVERT(VARCHAR, T."Date", 102) AS "Date",
+      T."Quantity", T."MeasuringUnit" AS "UM", ROUND(T."Quotation", 2) AS "Cotatie", T."Currency" AS "Moneda"
+      FROM
+      (
+        SELECT A."Code" AS "AssetName", ASS."Date", IsNull(SUM(T."Quantity"), 0) AS "Quantity", MU."Code" AS "MeasuringUnit",
+        CASE IsNull(SUM(T."Quantity"), 0) WHEN 0 THEN 0 ELSE IsNull(SUM(T."Quantity" * T."Price"), 0) / IsNull(SUM(T."Quantity"), 1) END AS "Quotation",
+        CASE WHEN C."Name" LIKE 'fld_Currency_Name%' THEN TRC."Value_RO" ELSE C."Name" END AS "Currency"
+        FROM "Markets" M
+        LEFT JOIN "Assets" A ON (M."ID" = A."ID_Market")
+        LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+        LEFT JOIN "AssetSessions" ASS ON (A."ID" = ASS."ID_Asset")
+        LEFT JOIN "Transactions" T ON (ASS."ID_Asset" = T."ID_Asset") AND (ASS."ID" = T."ID_AssetSession")
+        LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+        LEFT JOIN "Currencies" C ON (A."ID_Currency" = C."ID")
+        LEFT JOIN "Translations" TRC ON (C."Name" = CAST(TRC."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+        WHERE (M."ID_Bursary" = 4)
+        AND (ASS."Date" > CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME))
+        GROUP BY A."Code", ASS."Date", MU."Code", C."Name", TRC."Value_RO"
+      ) T
+      LEFT JOIN "Translations" TRN ON (T."AssetName" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE T."Quantity" != 0
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_AssetTradeParameters</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID" AS "ID_Asset", A."Code", A."Name",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance", 
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."DifferentialPriceText", 0) AS "DifferentialPriceText",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."SellWarrantyPercent", 0) AS "SellWarrantyPercent",
+      IsNull(TP."SellWarrantyMU", 0) AS "SellWarrantyMU",
+      IsNull(TP."SellWarrantyFixed", 0) AS "SellWarrantyFixed",
+      IsNull(TP."BuyWarrantyPercent", 0) AS "BuyWarrantyPercent",
+      IsNull(TP."BuyWarrantyMU", 0) AS "BuyWarrantyMU",
+      IsNull(TP."BuyWarrantyFixed", 0) AS "BuyWarrantyFixed"
+      FROM "Assets" A
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      WHERE (A."ID" = @prm_ID_Asset)
+    </SQL>
+  </Assets>
+  
+  <Assets>
+    <ID>select_TradeInstruments</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT M."Name", R."ID" AS "ID_Ring", R."Code" AS "RingCode", 
+      CASE WHEN R."Name" LIKE 'fld_Ring_Name%' THEN CASE WHEN @prm_Language = 'EN' THEN TRName."Value_EN" ELSE TRName."Value_RO" END ELSE R."Name" END AS "RingName",
+      --R."Name" AS "RingName", 
+      IsNUll(RS."Status", 'Closed') AS "RingStatus",
+      A."ID" AS "ID_Asset", A."Code" AS "AssetCode", 
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN CASE WHEN @prm_Language = 'EN' THEN TAName."Value_EN" ELSE TAName."Value_RO" END ELSE A."Name" END AS "AssetName",
+      --A."Name" AS "AssetName",
+      AT."ID" AS "ID_AssetType", AT."Name" AS "AssetType", IsNull(AAS."Status", 'Closed') AS "AssetStatus",
+      IsNull(C."Name", '') AS "Ordonator",
+      IsNull(OBid."Quantity", 0) AS "BidQuantity", IsNUll(OBid."Price", 0) AS "BidPrice",
+      IsNull(OAsk."Quantity", 0) AS "AskQuantity", IsNull(OAsk."Price", 0) AS "AskPrice",
+      ASCH."PreOpeningTime", ASCH."ClosingTime"
+      FROM "Markets" M
+      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+      LEFT JOIN "Translations" TRName ON  (R."Name" = CAST(TRName."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "RingSessions" RS ON (R."ID" = RS."ID_Ring") AND (CONVERT(VARCHAR, RS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+      LEFT JOIN "Assets" A ON (R."ID" = A."ID_Ring")
+      LEFT JOIN "Translations" TAName ON  (A."Name" = CAST(TAName."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID")
+      LEFT JOIN "AssetSessions" AAS ON (A."ID" = AAS."ID_Asset") AND (CONVERT(VARCHAR, AAS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+      LEFT JOIN "AssetSchedules" ASCH ON (A."ID" = ASCH."ID_Asset")
+      LEFT JOIN "Orders" OI ON (A."ID_InitialOrder" = OI."ID")
+      LEFT JOIN "Clients" C ON (OI."ID_Client" = C."ID")
+      LEFT JOIN
+      (
+        SELECT T."ID_Asset", SUM(O."Quantity") AS "Quantity", T."Price" FROM
+        (
+          SELECT O."ID_Asset", MAX("Price") AS "Price"
+          FROM "Orders" O
+          WHERE (O."isActive" = 1) AND (O."Direction" = 0)
+          GROUP BY O."ID_Asset"
+        ) T
+        LEFT JOIN "Orders" O ON (T."ID_Asset" = O."ID_Asset") AND (O."Direction" = 0) AND (T."Price" = O."Price")
+        GROUP BY T."ID_Asset", T."Price"
+      ) OBid ON (A."ID" = OBid."ID_Asset")
+      LEFT JOIN
+      (
+        SELECT T."ID_Asset", SUM(O."Quantity") AS "Quantity", T."Price" FROM
+        (
+          SELECT O."ID_Asset", MIN("Price") AS "Price"
+          FROM "Orders" O
+          WHERE (O."isActive" = 1) AND (O."Direction" = 1)
+          GROUP BY O."ID_Asset"
+        ) T
+        LEFT JOIN "Orders" O ON (T."ID_Asset" = O."ID_Asset") AND (O."Direction" = 1) AND (T."Price" = O."Price")
+        GROUP BY T."ID_Asset", T."Price"
+      ) OAsk ON (A."ID" = OAsk."ID_Asset")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary) AND ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (AAS."ID" IS NOT NULL)
+      AND ((R."ID" = @prm_ID_Ring) OR (@prm_ID_Ring = -1)) AND (R."IsActive" = 1)
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND ((A."Visibility" IN ('public', 'terminated')) AND (A."isActive" = 1))
+    </SQL>
+  </Assets>
+
+  <RingSessions>
+    <ID>select_SessionStats</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1
+      B."Name" AS "Bursary", M."Name" AS "Market", R."Name" AS "Ring",
+      R."PreOpeningTime", R."OpeningTime", R."PreClosingTime", R."ClosingTime",
+      RS."Date" AS "SessionDate", RS."Status", RS."TransactionsCount", RS."TotalVolume", RS."TotalValue",
+      RS."OpeningPrice", RS."MinPrice", RS."MaxPrice", RS."ClosingPrice"
+      FROM "RingSessions" RS
+      LEFT JOIN "Rings" R ON (RS."ID_Ring" = R."ID")
+      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+      LEFT JOIN "Bursaries" B ON (M."ID_Bursary" = B."ID")
+      --LEFT JOIN "Procedures" P ON (R."ID_Procedure" = P."ID")
+      WHERE "ID_Ring" = @prm_ID_Ring--CONVERT(VARCHAR(20), "Date", 102) = CONVERT(VARCHAR(20), GetDate(), 102)
+      ORDER BY RS."Date" DESC
+    </SQL>
+  </RingSessions>
+
+  <RingSessions>
+    <ID>select_CurrentSession</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "RingSessions" RS
+      WHERE "ID_Ring" = @prm_ID_Ring--CONVERT(VARCHAR(20), "Date", 102) = CONVERT(VARCHAR(20), GetDate(), 102)
+      ORDER BY "Date" DESC
+    </SQL>
+  </RingSessions>
+
+  <Rings>
+    <ID>select_MarketParameters</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT M."Name" AS "Market",
+      R."Code", R."Name", R."hasSchedule", R."DaysOfWeek",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 1 WHEN 0 THEN 0 ELSE 1 END) AS "daySunday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 2 WHEN 0 THEN 0 ELSE 1 END) AS "dayMonday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 4 WHEN 0 THEN 0 ELSE 1 END) AS "dayTuesday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 8 WHEN 0 THEN 0 ELSE 1 END) AS "dayWednesday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 16 WHEN 0 THEN 0 ELSE 1 END) AS "dayThursday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 32 WHEN 0 THEN 0 ELSE 1 END) AS "dayFriday",
+      CONVERT(BIT, CASE R."DaysOfWeek" &amp; 64 WHEN 0 THEN 0 ELSE 1 END) AS "daySaturday",
+      R."PreOpeningTime", R."OpeningTime", R."PreClosingTime", R."ClosingTime",
+      R."MinQuantity", R."MaxPriceVariation", R."QuantityStepping", R."PriceStepping",
+      IsNULL(RGN."StartDeliveryDateOffset", 0) AS "StartDeliveryDateOffset",
+      IsNULL(RGN."EndDeliveryDateOffset", 0) AS "EndDeliveryDateOffset"
+      FROM "Rings" R
+      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+      LEFT JOIN "RingParameters_RGN" RGN ON (R."ID" = RGN."ID_Ring")
+      WHERE R."ID" = @prm_ID_Ring
+    </SQL>
+  </Rings>
+
+  <AssetSessions>
+    <ID>select_CurrentSession</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "AssetSessions" RS
+      WHERE "ID_Asset" = @prm_ID_Asset--CONVERT(VARCHAR(20), "Date", 102) = CONVERT(VARCHAR(20), GetDate(), 102)
+      ORDER BY "Date" DESC
+    </SQL>
+  </AssetSessions>
+
+  <AssetSessions>
+    <ID>select_SessionStats_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1
+      B."Name" AS "Bursary", M."Name" AS "Market", R."Name" AS "Ring",
+      R."PreOpeningTime", R."OpeningTime", R."PreClosingTime", R."ClosingTime",
+      S."Date" AS "SessionDate", S."Status", S."TransactionsCount",
+      S."TotalVolume", S."TotalValue",
+      S."OpeningPrice", S."MinPrice", S."MaxPrice", S."ClosingPrice"
+      FROM "AssetSessions" S
+      LEFT JOIN "Rings" R ON (S."ID_Ring" = R."ID")
+      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+      LEFT JOIN "Bursaries" B ON (M."ID_Bursary" = B."ID")
+      --LEFT JOIN "Procedures" P ON (R."ID_Procedure" = P."ID")
+      WHERE S."ID_Asset" = @prm_ID_Asset
+      ORDER BY S."Date" DESC
+    </SQL>
+  </AssetSessions>
+
+  <AssetSessions>
+    <ID>select_SessionStats_DISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM dbo.SessionStatsDISPONIBIL(@prm_ID_Asset, @prm_ID_Broker)
+    </SQL>
+  </AssetSessions>
+
+  <AssetSessions>
+    <ID>select_DeltaTimings</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM dbo.DeltaTimings(@prm_ID_Asset)
+    </SQL>
+  </AssetSessions>
+
+  <AssetSessions>
+    <ID>select_lastSessionStats</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1
+      B."Name" AS "Bursary", M."Name" AS "Market", R."Name" AS "Ring",
+      R."PreOpeningTime", R."OpeningTime", R."PreClosingTime", R."ClosingTime",
+      S."Date" AS "SessionDate", S."Status", S."TransactionsCount",
+      S."TotalVolume", S."TotalValue",
+      S."OpeningPrice", S."MinPrice", S."MaxPrice", S."ClosingPrice"
+      FROM "AssetSessions" S
+      LEFT JOIN "Rings" R ON (S."ID_Ring" = R."ID")
+      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+      LEFT JOIN "Bursaries" B ON (M."ID_Bursary" = B."ID")
+      --LEFT JOIN "Procedures" P ON (R."ID_Procedure" = P."ID")
+      WHERE (S."ID_Asset" = @prm_ID_Asset)
+      AND (S."ID" &lt; IsNull((SELECT TOP 1 "ID" FROM "AssetSessions" WHERE CAST(CONVERT(VARCHAR, "Date", 102) AS DATETIME) = CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME)), 0))
+      ORDER BY S."Date" DESC
+    </SQL>
+  </AssetSessions>
+
+  <Orders>
+    <ID>select_Orders</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Orders" WHERE ("ID" = @prm_ID) Or (@prm_ID = -1)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrdersRGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O."ID", O."Date", O."ID_Ring", O."ID_Asset", O."ID_Agency", O."ID_Broker", O."ID_Client", C."Code" AS "Client",
+      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+      O."Quantity", O."Price", RGN."ID_GNType", GNT."Code" AS "GNTypeCode", GNT."Name" AS "GNTypeName",
+      RGN."StartDeliveryDate", RGN."EndDeliveryDate", RGN."CombinationsAccepted",
+      O."isActive", O."isSuspended", O."isTransacted", O."isCanceled"
+      FROM "Markets" M
+      RIGHT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+      RIGHT JOIN "Orders" O ON (R."ID" = O."ID_Ring")
+      LEFT JOIN "OrderDetails_RGN" RGN ON (O."ID" = RGN."ID_Order")
+      LEFT JOIN "GNTypes" GNT ON (RGN."ID_GNType" = GNT."ID")
+      LEFT JOIN "Brokers" B ON (O."ID_Broker" = B."ID") AND (B."isDeleted" = 0)
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((O."ID_RingSession" = @prm_ID_RingSession) OR (@prm_ID_RingSession = -1))
+      AND ((O."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      AND
+      (
+      ((O."isActive" = 1) AND (@prm_ID = -1) AND (@prm_AnyStatus = 0)) OR
+      ((@prm_AnyStatus = 1) AND (@prm_ID = -1)) OR
+      (O."ID" = @prm_ID)
+      )
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrdersDISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O."ID", O."Date", O."ID_Ring", O."ID_Asset", A."Code", A."Name", A."MeasuringUnit",
+      CONVERT(BIT, CASE WHEN A."ID_InitialOrder" = O."ID" THEN 1 ELSE 0 END) AS "isInitial",
+      O."ID_Agency", O."ID_Broker", O."ID_Client", C."Code" AS "Client",
+      CASE O."Direction" WHEN 0 THEN 'B' WHEN 1 THEN 'S' ELSE '' END AS "Direction",
+      O."Quantity" - IsNull((SELECT SUM(T."Quantity") FROM "Transactions" T WHERE (T."ID_BuyOrder" = O."ID") OR (T."ID_SellOrder" = O."ID")), 0) AS "Quantity",
+      O."Price", O."PartialFlag", O."PartialFlag" AS "isPartial", O."ExpirationDate",
+      O."isActive", O."isSuspended", O."isTransacted", O."isCanceled",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."DifferentialPriceText", '') AS "DifferentialPriceText",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      C."Name" AS "ClientName", AG."Name" AS "AgencyName"
+      FROM "Markets" M
+      RIGHT JOIN "Rings" R ON (M."ID" = R."ID_Market")
+      RIGHT JOIN "Orders" O ON (R."ID" = O."ID_Ring")
+      LEFT JOIN "Assets" A ON (O."ID_Asset" = A."ID")
+      LEFT JOIN "Brokers" B ON (O."ID_Broker" = B."ID") AND (B."isDeleted" = 0)
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Agencies" AG ON (C."ID_Agency" = AG."ID")
+      LEFT JOIN "TradeParameters" TP ON (O."ID_Asset" = TP."ID_Asset")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((O."ID_RingSession" = @prm_ID_RingSession) OR (@prm_ID_RingSession = -1))
+      AND ((O."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      AND ((O."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND
+      (
+      ((O."isActive" = 1) AND (@prm_ID = -1) AND (@prm_AnyStatus = 0)) OR
+      ((@prm_AnyStatus = 1) AND (@prm_ID = -1)) OR
+      (O."ID" = @prm_ID)
+      )
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrderTransactions</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Date", R."Name" AS "Ring", A."Code" AS "Asset", T."ID_BuyOrder", T."ID_SellOrder",
+      OBuy."ID_Broker" AS "ID_BuyBroker", OBuy."ID_Client" AS "ID_BuyClient", CBuy."Code" AS "BuyClient",
+      OSell."ID_Broker" AS "ID_SellBroker", OSell."ID_Client" AS "ID_SellClient", CSell."Code" AS "SellClient",
+      T."Quantity", T."Price", TD."StartDeliveryDate", TD."EndDeliveryDate"
+      FROM "Transactions" T
+      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "TransactionDetails_RGN" TD ON (T."ID" = TD."ID_Transaction")
+
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyORder" = OBuy."ID")
+      LEFT JOIN "Brokers" BBuy ON (OBuy."ID_Broker" = BBuy."ID")
+      LEFT JOIN "Agencies" ABuy ON (BBuy."ID_Agency" = ABuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Brokers" BSell ON (OSell."ID_Broker" = BSell."ID")
+      LEFT JOIN "Agencies" ASell ON (BSell."ID_Agency" = ASell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell."ID")
+      --WHERE (OBuy."ID_Broker" = @prm_ID_Broker) OR (OSell."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1)
+      WHERE (T."ID_BuyOrder" = @prm_ID_Order) OR (T."ID_SellOrder" = @prm_ID_Order)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_Precheck</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Orders" O
+      LEFT JOIN "OrderDetails_RGN" RGN ON (O."ID" = RGN."ID_Order")
+      WHERE (O."isActive" = 1) AND (O."ID_Client" != @prm_ID_Client)
+      AND (RGN."StartDeliveryDate" = @prm_StartDeliveryDate) AND (RGN."EndDeliveryDate" = @prm_EndDeliveryDate)
+      AND (O."Direction" != @prm_Direction)
+      AND ((@prm_Quantity &gt; 0) AND ((ABS(O."Quantity" - @prm_Quantity) / @prm_Quantity) &lt; 0.4))
+      AND ((@prm_Price &gt; 0) AND ((ABS(O."Price" - @prm_Price) / @prm_Price) &lt; 0.4))      
+      AND (dbo.isAgreedClient(O."ID_Asset", @prm_ID_Client, O."ID_Client") = 1)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrdersHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O."Date" AS "Data/Ora",
+      GNT."Name" AS "Tip Gaz", O."Quantity" AS "Cantitate", O."Price" AS "Pret",
+      CONVERT(VARCHAR, RGN."StartDeliveryDate", 102) AS "Data Inceput", 
+      CONVERT(VARCHAR, RGN."EndDeliveryDate", 102) AS "Data Final",
+      CASE RGN."CombinationsAccepted" WHEN 0 THEN 'Nu' WHEN 1 THEN 'Da' END AS "Combinatii Acceptate",
+      CASE
+      WHEN O."isActive" = 1 THEN 'Activ'
+      WHEN O."isTransacted" = 1 THEN 'Tranzactionat'
+      WHEN O."isSuspended" = 1 THEN 'Suspendat'
+      ELSE 'Anulat' END AS "Status"
+      FROM "Orders" O
+      LEFT JOIN "OrderDetails_RGN" RGN ON (O."ID" = RGN."ID_Order")
+      LEFT JOIN "GNTypes" GNT ON (RGN."ID_GNType" = GNT."ID")
+      WHERE (O."ID_Asset" = 1) AND ((O."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Broker = -1))
+      AND (O."Date" BETWEEN @prm_StartDate AND DATEADD(day, 1, @prm_EndDate))
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrdersHistoryDISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 
+      O."Date" AS "Data/Ora",
+      A."Name" AS "Activ",
+      CASE O."Direction" WHEN 0 THEN 'C' ELSE 'V' END AS "Sens",
+      O."Quantity" AS "Cantitate", 
+      O."Price" AS "Pret",
+      O."PartialFlag" AS "Partial",
+      CASE
+      WHEN O."isActive" = 1 THEN 'Activ'
+      WHEN O."isTransacted" = 1 THEN 'Tranzactionat'
+      WHEN O."isSuspended" = 1 THEN 'Suspendat'
+      ELSE 'Anulat' END AS "Status"
+      FROM "Orders" O
+      LEFT JOIN "Assets" A ON (O."ID_Asset" = A."ID")
+      WHERE (O."ID_Broker" = @prm_ID_Broker) 
+      AND (O."Date" BETWEEN @prm_StartDate AND DATEADD(day, 1, @prm_EndDate))
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_DISPOrdersReport</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."DenumireClient", T."Cantitate", T."Pret",
+      CASE
+      WHEN (T."CantitateTranzactionata" != 0) AND (T."CantitateTranzactionata" = T."Cantitate") THEN 'Tranzactionat Total'
+      WHEN (T."CantitateTranzactionata" != 0) AND (T."CantitateTranzactionata" != T."Cantitate") THEN 'Tranzactionat Partial'
+      WHEN (T."CantitateTranzactionata" = 0) AND (T."isCanceled" = 1) THEN 'Anulat'
+      WHEN (T."CantitateTranzactionata" = 0) AND (T."DataModificareOrdin" != T."DataCreareOrdin") THEN 'Modificat'
+      WHEN (T."CantitateTranzactionata" = 0) AND (T."DataModificareOrdin" = T."DataCreareOrdin") THEN 'Adaugat'
+      END AS "StareOrdin",
+      T."NumeAgentie", T."CodClient", T."DataValabilitateOrdin", T."DataCreareOrdin", T."DataModificareOrdin", T."CantitateTranzactionata"
+      FROM
+      (
+      SELECT C."Name" AS "DenumireClient", O."Quantity" AS "Cantitate", O."Price" AS "Pret",
+      A."Name" AS "NumeAgentie", C."Code" AS "CodClient",
+      CONVERT(VARCHAR, O."ExpirationDate", 120) AS "DataValabilitateOrdin",
+      CONVERT(VARCHAR, (SELECT MIN("Date") FROM "Journal" WHERE "ID_Order" = O."ID"), 120) AS "DataCreareOrdin",
+      CONVERT(VARCHAR, O."Date", 120) AS "DataModificareOrdin", SUM(IsNull(T."Quantity", 0)) AS "CantitateTranzactionata",
+      O."isCanceled"
+      FROM "Orders" O
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Agencies" A ON (O."ID_Agency" = A."ID")
+      LEFT JOIN "Transactions" T ON (O."ID" = T."ID_BuyOrder") OR (T."ID" = T."ID_SellOrder")
+      WHERE O."ID_Asset" = @prm_ID_Asset
+      GROUP BY C."Name", O."Quantity", O."Price", A."Name", C."Code", O."ExpirationDate", O."ID", O."Date", O."isCanceled"
+      ) T
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_InitialOrders</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O.*
+      FROM "Assets" A
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      WHERE ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1)) AND (O."ID" IS NOT NULL)
+    </SQL>
+  </Orders>  
+
+  <OrderMatches>
+    <ID>select_OrderMatches_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT OM."ID", OM."isAccepted", OM."isRejected", OMD."ID_Order", O."Quantity", O."Price", OD."StartDeliveryDate", OD."EndDeliveryDate"
+      FROM "OrderMatches" OM
+      LEFT JOIN "OrderMatchDetails" OMD ON (OM."ID" = OMD."ID_OrderMatch")
+      LEFT JOIN "Orders" O ON (OMD."ID_Order" = O."ID")
+      LEFT JOIN "OrderDetails_RGN" OD ON (O."ID" = OD."ID_Order")
+      WHERE OM."ID_Order" = @prm_ID_Order
+    </SQL>
+  </OrderMatches>
+
+  <OrderMatches>
+    <ID>select_OrderMatches_DISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT OM."ID", OM."ID_Order", OM."isAccepted", OM."isRejected", OMD."ID_Order" AS "ID_MatchedOrder", OD."Quantity", OD."Price"
+      FROM "Orders" O
+      RIGHT JOIN "OrderMatches" OM ON (O."ID" = OM."ID_Order")
+      LEFT JOIN "OrderMatchDetails" OMD ON (OM."ID" = OMD."ID_OrderMatch")
+      LEFT JOIN "Orders" OD ON (OMD."ID_Order" = OD."ID")
+      WHERE ((O."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND ((O."ID" = @prm_ID_Order) OR (@prm_ID_Order = -1))
+    </SQL>
+  </OrderMatches>
+
+  <Transactions>
+    <ID>select_Transactions</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Transactions"
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>select_TransactionsRGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Date", 
+      CASE 
+      WHEN OBuy."ID_Broker" = @prm_ID_Broker THEN 'B'
+      WHEN OSell."ID_Broker" = @prm_ID_Broker THEN 'S'
+      ELSE '' END AS "Direction",
+      R."Name" AS "Ring", A."Code" AS "Asset", T."ID_BuyOrder", T."ID_SellOrder",
+      OBuy."ID_Broker" AS "ID_BuyBroker", OBuy."ID_Client" AS "ID_BuyClient", CBuy."Code" AS "BuyClient", 
+      OSell."ID_Broker" AS "ID_SellBroker", OSell."ID_Client" AS "ID_SellClient", CSell."Code" AS "SellClient",
+      T."Quantity", T."Price", TD."StartDeliveryDate", TD."EndDeliveryDate"
+      FROM "Markets" M      
+      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market") --(T."ID_Ring" = R."ID")
+      LEFT JOIN "Transactions" T ON (R."ID" = T."ID_Ring")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "TransactionDetails_RGN" TD ON (T."ID" = TD."ID_Transaction")
+
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyORder" = OBuy."ID")
+      LEFT JOIN "Brokers" BBuy ON (OBuy."ID_Broker" = BBuy."ID")
+      LEFT JOIN "Agencies" ABuy ON (BBuy."ID_Agency" = ABuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Brokers" BSell ON (OSell."ID_Broker" = BSell."ID")
+      LEFT JOIN "Agencies" ASell ON (BSell."ID_Agency" = ASell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell."ID")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND ((OBuy."ID_Broker" = @prm_ID_Broker) OR (OSell."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      AND (T."Date" BETWEEN @prm_StartDate AND @prm_EndDate) --AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      --AND (CONVERT(VARCHAR(20), T."Date", 102) = CONVERT(VARCHAR(20), GetDate(), 102))
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>select_TransactionsDISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Date" AS "TransactionDate", T."Quantity", T."Price", A."ID_MeasuringUnit", MU."Code" AS "MeasuringUnit",
+      CASE
+      WHEN (OBuy."ID_Broker" = @prm_ID_Broker) OR (OBuy."ID_Broker" = 0) THEN 'B'
+      WHEN (OSell."ID_Broker" = @prm_ID_Broker) OR (OSell."ID_Broker" = 0) THEN 'S'
+      ELSE '' END AS "Direction",
+      R."Name" AS "Ring", T."ID_Asset", A."Code" AS "Asset", A."ID_Currency", C."Name" AS "Currency", T."ID_BuyOrder", T."ID_SellOrder",
+      OBuy."ID_Broker" AS "ID_BuyBroker", OBuy."ID_Client" AS "ID_BuyClient", OBuy."ID" AS "OrderBuyID", OBuy."Quantity" AS "OrderBuyQuantity", OBuy."PartialFlag" AS "OrderBuyIsPartial", OBuy."Date" AS "OrderBuyCreationDate",
+      CBuy."Code" AS "BuyClient", CBuy."Name" AS "BuyClientName",
+      OSell."ID_Broker" AS "ID_SellBroker", OSell."ID_Client" AS "ID_SellClient", OSell."ID" AS "OrderSellID", OSell."Quantity" AS "OrderSellQuantity", OSell."PartialFlag" AS "OrderSellIsPartial", OSell."Date" AS "OrderSellCreationDate",
+      CSell."Code" AS "SellClient", CSell."Name" AS "SellClientName",
+      ASSE."Status", ASCH."PreOpeningTime", ASCH."OpeningTime", ASCH."PreClosingTime", ASCH."ClosingTime",
+      ASCH."QuantityStepping", ASCH."PriceStepping"
+
+      FROM "Markets" M
+      LEFT JOIN "Rings" R ON (M."ID" = R."ID_Market") --(T."ID_Ring" = R."ID")
+      LEFT JOIN "Transactions" T ON (R."ID" = T."ID_Ring")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Currencies" C ON (A."ID_Currency" = C."ID")
+      --LEFT JOIN "TradeParameters" ATP ON (A."ID" = ATP."ID_Asset")
+      LEFT JOIN "AssetSessions" ASSE ON (T."ID_AssetSession" = ASSE."ID")
+      LEFT JOIN "AssetSchedules" ASCH ON (ASSE."ID_AssetSchedule" = ASCH."ID")
+
+
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyORder" = OBuy."ID")
+      LEFT JOIN "Brokers" BBuy ON (OBuy."ID_Broker" = BBuy."ID")
+      LEFT JOIN "Agencies" ABuy ON (OBuy."ID_Agency" = ABuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Brokers" BSell ON (OSell."ID_Broker" = BSell."ID")
+      LEFT JOIN "Agencies" ASell ON (OSell."ID_Agency" = ASell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell."ID")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND
+      (
+      (OBuy."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker IN (SELECT "ID" FROM "Brokers" WHERE "ID_Agency" = ABuy."ID"))
+      OR (OSell."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker IN (SELECT "ID" FROM "Brokers" WHERE "ID_Agency" = ASell."ID"))
+      OR (@prm_ID_Broker = -1)
+      )
+      AND (T."Date" BETWEEN @prm_StartDate AND @prm_EndDate) AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      --AND (CONVERT(VARCHAR(20), T."Date", 102) = CONVERT(VARCHAR(20), CAST('20150130' AS DATETIME), 102))
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>select_TransactionsDISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Date",
+      CASE
+      WHEN OBuy."ID_Broker" = @prm_ID_Broker THEN 'B'
+      WHEN OSell."ID_Broker" = @prm_ID_Broker THEN 'S'
+      ELSE '' END AS "Direction",
+      R."Name" AS "Ring", A."Code" AS "Asset", T."ID_BuyOrder", T."ID_SellOrder",
+      OBuy."ID_Broker" AS "ID_BuyBroker", OBuy."ID_Client" AS "ID_BuyClient", CBuy."Code" AS "BuyClient",
+      OSell."ID_Broker" AS "ID_SellBroker", OSell."ID_Client" AS "ID_SellClient", CSell."Code" AS "SellClient",
+      T."Quantity", T."Price"
+      FROM "Transactions" T
+      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "TransactionDetails_RGN" TD ON (T."ID" = TD."ID_Transaction")
+
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyORder" = OBuy."ID")
+      LEFT JOIN "Brokers" BBuy ON (OBuy."ID_Broker" = BBuy."ID")
+      LEFT JOIN "Agencies" ABuy ON (OBuy."ID_Agency" = ABuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Brokers" BSell ON (OSell."ID_Broker" = BSell."ID")
+      LEFT JOIN "Agencies" ASell ON (OSell."ID_Agency" = ASell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell."ID")
+      WHERE 
+	    (
+		    (OBuy."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker IN (SELECT "ID" FROM "Brokers" WHERE "ID_Agency" = ABuy."ID"))
+		    OR (OSell."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker IN (SELECT "ID" FROM "Brokers" WHERE "ID_Agency" = ASell."ID"))
+		    OR (@prm_ID_Broker = -1)
+	    )
+      AND (CONVERT(VARCHAR(20), T."Date", 102) = CONVERT(VARCHAR(20), GetDate(), 102))
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>select_TransactionsHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."Date" AS "Data/Ora",
+      CASE
+      WHEN OBuy."ID_Broker" = @prm_ID_Broker THEN 'Cumparare'
+      WHEN OSell."ID_Broker" = @prm_ID_Broker THEN 'Vanzare'
+      --WHEN @prm_ID_Broker = -1 THEN CBuy."Name"
+      ELSE '' END AS "Directie",
+      A."Code" AS "Activ", CBuy."Code" AS "Cumparator", CSell."Code" AS "Vanzator",
+      T."Quantity" AS "Cantitate", T."Price" AS "Pret",
+      CONVERT(VARCHAR, TD."StartDeliveryDate", 102) AS "Data Inceput",
+      CONVERT(VARCHAR, TD."EndDeliveryDate", 102) AS "Data Final"
+      FROM "Transactions" T
+      LEFT JOIN "TransactionDetails_RGN" TD ON (T."ID" = TD."ID_Transaction")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyOrder" = OBuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell.ID)
+      WHERE (T."ID_Asset" = 1) AND ((OBuy."ID_Agency" = @prm_ID_Agency) OR (OSell."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Broker = -1)) 
+      AND (T."Date" BETWEEN @prm_StartDate AND DATEADD(day, 1, @prm_EndDate))
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>select_TransactionsHistoryDISPONIBIL</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."Date" AS "Data/Ora",
+      CASE
+      WHEN OBuy."ID_Broker" = @prm_ID_Broker THEN 'Cumparare'
+      WHEN OSell."ID_Broker" = @prm_ID_Broker THEN 'Vanzare'
+      ELSE '' END AS "Directie",
+      A."Code" AS "Activ", CBuy."Code" AS "Cumparator", CSell."Code" AS "Vanzator",
+      T."Quantity" AS "Cantitate", T."Price" AS "Pret"
+      FROM "Transactions" T
+      LEFT JOIN "TransactionDetails_RGN" TD ON (T."ID" = TD."ID_Transaction")
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      LEFT JOIN "Orders" OBuy ON (T."ID_BuyOrder" = OBuy."ID")
+      LEFT JOIN "Clients" CBuy ON (OBuy."ID_Client" = CBuy."ID")
+      LEFT JOIN "Orders" OSell ON (T."ID_SellOrder" = OSell."ID")
+      LEFT JOIN "Clients" CSell ON (OSell."ID_Client" = CSell.ID)
+      WHERE ((OBuy."ID_Broker" = @prm_ID_Broker) OR (OSell."ID_Broker" = @prm_ID_Broker)) 
+      AND (T."Date" BETWEEN @prm_StartDate AND DATEADD(day, 1, @prm_EndDate))
+    </SQL>
+  </Transactions>
+
+  <MarketData>
+    <ID>getMarketChartDatabyID_Asset</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "MarketData"
+      WHERE "ID_AssetSession" = (SELECT TOP 1 "ID" FROM "AssetSessions" WHERE "ID_Asset" = @prm_ID_Asset ORDER BY "Date" DESC)
+      AND ((CAST(CONVERT(varchar, GetDate(), 102) AS DATETIME) + CAST("Tick" AS DATETIME) &gt; @prm_Date) OR (@prm_Date = ''))
+      ORDER BY "Tick"
+    </SQL>
+  </MarketData>
+
+  <AgreedClients>
+    <ID>select_AgreedClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C."ID", C."Code", C."Name",
+      CAST(CASE WHEN AC."isAgreed" IS NULL THEN 1 ELSE AC."isAgreed" END AS BIT) AS "isAgreed",
+      IsNull(IsNull(R."Reason", AC."Reason"), '') AS "Reason",
+      CAST(CASE WHEN AC."isApproved" IS NULL THEN 1 ELSE AC."isApproved" END AS BIT) AS "isApproved"
+      FROM "Clients" C
+      LEFT JOIN "AgreedClients" AC ON (AC."ID_Client" = @prm_ID_Client) AND (C."ID" = AC."ID_AgreedClient")
+      LEFT JOIN "DisagreeReasons" R ON (AC."ID_DisagreeReason" = R."ID")
+      WHERE (C."ID_Bursary" = @prm_ID_Bursary) AND (@prm_ID_Client > 0) AND (C."ID" != @prm_ID_Client)
+    </SQL>
+  </AgreedClients>
+
+  <AgreedClients>
+    <ID>select_WhitelistRequests</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT AC."ID", A."Name", Cfrom."Name" AS "FromRequest", Cto."Name" AS "RegardingClient", IsNull(R."Reason", AC."Reason")
+      FROM "AgreedClients" AC
+      LEFT JOIN "Assets" A ON (AC."ID_Asset" = A."ID")
+      LEFT JOIN "Clients" Cfrom ON (AC."ID_Client" = Cfrom."ID")
+      LEFT JOIN "Clients" Cto ON (AC."ID_AgreedClient" = Cto."ID")
+      LEFT JOIN "DisagreeReasons" R ON (AC."ID_DisagreeReason" = R."ID")
+      WHERE (AC."isAgreed" = 0) AND (AC."isApproved" = 0)
+    </SQL>
+  </AgreedClients>
+
+  <DisagreeReasons>
+    <ID>select_DisagreeReasons</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "DisagreeReasons" WHERE "isDeleted" = 0
+    </SQL>
+  </DisagreeReasons>
+
+  <Events>
+    <ID>select_EventHistory</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Events" E
+      WHERE ((E."Date" &gt;= @prm_Date) OR (@prm_Date = '')) AND (E."Date" &gt;= CAST(CONVERT(VARCHAR(20), GetDate(), 102) AS DATETIME))
+      ORDER BY "Priority", "Date"
+    </SQL>
+  </Events>
+
+  <Events>
+    <ID>select_DBTime</ID>
+    <SQLType>1</SQLType>
+    <SQL>SELECT GetDate() AS "DBTime"</SQL>
+  </Events>
+
+  <Journal>
+    <ID>select_Journal</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT J."ID", J."Date", J."Operation",
+      J."ID_User", U."LoginName", J."ID_Broker",
+      J."ID_Agency", AG."Code" AS "AgencyCode", AG."Name" AS "AgencyName",
+      J."ID_Client", C."Code" AS "ClientCode", C."Name" AS "ClientName",
+      J."ID_Ring", R."Code" AS "RingCode", R."Name" AS "RingName",
+      J."ID_Asset", A."Code" AS "AssetCode", A."Name" AS "AssetName",
+      J."ID_Order", J."Quantity", J."Price", GNT."Code" AS "GNTypeCode", GNT."Name" AS "GNTypeName",
+      J."Message"
+      FROM "Journal" J
+      LEFT JOIN "Users" U ON (J."ID_User" = U."ID")
+      LEFT JOIN "Brokers" B ON (J."ID_Broker" = B."ID") AND (B."isDeleted" = 0)
+      LEFT JOIN "Agencies" AG ON (J."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (J."ID_Client" = C."ID")
+      LEFT JOIN "Rings" R ON (J."ID_Ring" = R."ID")
+      LEFT JOIN "Assets" A ON (J."ID_Asset" = A."ID")
+      LEFT JOIN "OrderDetails_RGN" RGN ON (J."ID_Order" = RGN."ID_Order")
+      LEFT JOIN "GNTypes" GNT ON (RGN."ID_GNType" = GNT."ID")
+      WHERE ((J."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((J."Date" &gt;= @prm_Date) OR (@prm_Date = ''))
+      AND (J."ID_Bursary" = @prm_ID_Bursary)
+      AND ((J."ID_User" = @prm_ID_User) OR (@prm_ID_User = -1))
+      AND ((J."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      AND ((J."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+      AND ((J."ID_Client" = @prm_ID_Client) OR (@prm_ID_Client = -1))
+      AND ((J."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((J."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      ORDER BY J."Date" DESC
+    </SQL>
+  </Journal>
+
+  <Journal>
+    <ID>select_WebJournal</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 10 J."Date", J."Operation",
+      CASE WHEN A."Name" LIKE 'fld_Asset_Name%' THEN TRN."Value_RO" ELSE A."Name" END AS "AssetName",
+      --CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit_Name%' THEN TRMU."Value_RO" ELSE MU."Name" END AS "MeasuringUnit",
+      MU."Code" AS "MeasuringUnit",
+      CASE O."Direction" WHEN 0 THEN 'cumparare' WHEN 1 THEN 'vanzare' END AS "Direction",
+      J."Quantity", J."Price"
+      INTO #tmp
+      FROM "Journal" J
+      LEFT JOIN "Assets" A ON (J."ID_Asset" = A."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "Translations" TRN ON (A."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRMU ON (MU."Name" = CAST(TRMU."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Orders" O ON (J."ID_Order" = O."ID")
+      WHERE (J."ID_Bursary" = @prm_ID_Bursary) AND (J."Operation" = 'transaction')
+      ORDER BY J."Date" DESC
+
+      SELECT T."Date",
+      CASE T."Operation"
+      WHEN 'transaction' THEN CAST(T."Quantity" AS VARCHAR(50)) + ' ' + T."MeasuringUnit" + ' s-au tranzactionat la pretul de ' + CAST(T."Price" AS VARCHAR(50)) + ' lei pe activul ' + T."AssetName"
+      END AS "Message"
+      FROM #tmp T
+
+      DROP TABLE #tmp
+    </SQL>
+  </Journal>
+
+  <GridReports>
+    <ID>select_AssetJournal</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT --J."ID_Broker", J."ID_Agency", J."ID_Client", 
+      CONVERT(VARCHAR(100), J."Date", 120) AS "Data istoric", 
+      C."Name" AS "Denumire Client", CASE O."Direction" WHEN 0 THEN 'Cumparare' WHEN 1 THEN 'Vanzare' END AS "Sens",
+      J."Quantity" AS "Cantitate", J."Price" AS "Pret", MU."Code" AS "Unitate de masura",
+      CASE J."Operation" 
+      WHEN 'order added' THEN 'Adaugat'
+      WHEN 'order modified' THEN 'Modificat'
+      WHEN 'order canceled' THEN 'Anulat'
+      WHEN 'transaction' THEN 'Tranzactionat'
+      END AS "Stare ordin", 
+      CONVERT(VARCHAR(100), O."ExpirationDate", 120) AS "Data Valabilitate"
+      FROM "Journal" J
+      LEFT JOIN "Users" U ON (J."ID_User" = U."ID")
+      LEFT JOIN "Brokers" B ON (J."ID_Broker" = B."ID") AND (B."isDeleted" = 0)
+      LEFT JOIN "Agencies" AG ON (J."ID_Agency" = AG."ID")
+      LEFT JOIN "Clients" C ON (J."ID_Client" = C."ID")
+      LEFT JOIN "Rings" R ON (J."ID_Ring" = R."ID")
+      LEFT JOIN "Assets" A ON (J."ID_Asset" = A."ID")
+      LEFT JOIN "Orders" O ON (J."ID_Order" = O."ID")
+      LEFT JOIN "MeasuringUnits" MU ON (A."ID_MeasuringUnit" = MU."ID")
+      LEFT JOIN "OrderDetails_RGN" RGN ON (J."ID_Order" = RGN."ID_Order")
+      LEFT JOIN "GNTypes" GNT ON (RGN."ID_GNType" = GNT."ID")
+      WHERE (J."ID_Bursary" = @prm_ID_Bursary) 
+      AND ((J."Date" &gt;= @prm_Date) OR (@prm_Date = ''))
+      AND ((J."ID_User" = @prm_ID_User) OR (@prm_ID_User = -1))
+      AND ((J."ID_Broker" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      AND ((J."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+      AND ((J."ID_Client" = @prm_ID_Client) OR (@prm_ID_Client = -1))
+      AND ((J."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((J."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND (J."Operation" IN ('order added', 'order modified', 'order canceled', 'transaction'))
+      ORDER BY J."Date" DESC
+    </SQL>
+  </GridReports>
+
+  <GNTypes>
+    <ID>select_GNTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "GNTypes"
+    </SQL>
+  </GNTypes>
+
+  <EntryPoints_RGN>
+    <ID>select_EntryPoints_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT  EP."ID", EP."ID_County", EP."PhysicalPointCode", EP."PhysicalPointName", EP."VirtualPointCode",
+      EP."VirtualPointName", EP."VirtualEntryPointCode", EP."VirtualEntryPointName",
+      EP."AdjacentNetworkOperator", EP."AdjacentNetworkOperatorType", EP."Locality",
+      EP."LowerSirutaCode", EP."UpperSirutaCode", EP."TerritorialBranch", EP."Sector",
+      EP."TechnologicalMinimumPressure", EP."TechnologicalMinimumUM", EP."TechnologicalMaximumPressure",
+      EP."TechnologicalMaximumUM", EP."AnnualAverageGrossCalorificValue", EP."AnnualUM", EP."TechnologicalCapacity",
+      EP."TechnologicalCapacityUM", C."Code" AS "CountyCode", C."Name" AS "CountyName",
+      CAST('' AS VARCHAR(150)) AS "GNTypes"
+      INTO #tmp
+      FROM "EntryPoints_RGN" EP
+      LEFT JOIN "Counties" C ON (EP."ID_County" = C."ID")
+      WHERE ((EP."ID" = @prm_ID) OR (@prm_ID = -1)) AND (EP."isDeleted" = 0)
+      ORDER BY EP."PhysicalPointCode"
+
+      DECLARE @prm_ID_EP AS INT
+      DECLARE crs CURSOR FOR SELECT "ID" FROM #tmp
+      OPEN crs
+
+      FETCH NEXT FROM crs INTO @prm_ID_EP
+      WHILE @@FETCH_STATUS &lt;&gt; -1
+      BEGIN
+      DECLARE @s AS VARCHAR(150)
+      SET @s = NULL
+
+      SELECT @s = COALESCE(@s + ', ' + CAST("ID_GNType" AS VARCHAR), CAST("ID_GNType" AS VARCHAR))
+      FROM "EntryPointsXGNTypes_RGN" WHERE "ID_EntryPoint" = @prm_ID_EP
+
+      UPDATE #tmp SET "GNTypes" = '[' + IsNull(@s, '') + ']' WHERE "ID" = @prm_ID_EP
+
+      FETCH NEXT FROM crs INTO @prm_ID_EP
+      END
+
+      CLOSE crs
+      DEALLOCATE crs
+
+      SELECT * FROM #tmp
+      DROP TABLE #tmp
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>select_OrderEntryPoints</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT  EP."ID", EP."ID_County", EP."PhysicalPointCode", EP."PhysicalPointName", EP."VirtualPointCode",
+      EP."VirtualPointName", EP."VirtualEntryPointCode", EP."VirtualEntryPointName",
+      EP."AdjacentNetworkOperator", EP."AdjacentNetworkOperatorType", EP."Locality",
+      EP."LowerSirutaCode", EP."UpperSirutaCode", EP."TerritorialBranch", EP."Sector",
+      EP."TechnologicalMinimumPressure", EP."TechnologicalMinimumUM", EP."TechnologicalMaximumPressure",
+      EP."TechnologicalMaximumUM", EP."AnnualAverageGrossCalorificValue", EP."AnnualUM", EP."TechnologicalCapacity",
+      EP."TechnologicalCapacityUM", C."Code" AS "CountyCode", C."Name" AS "CountyName"
+      FROM "EntryPoints_RGN" EP
+      LEFT JOIN "Counties" C ON (EP."ID_County" = C."ID")
+      LEFT JOIN "OrdersXEntryPoints_RGN" OXEP ON (OXEP."ID_EntryPoint" = EP."ID")
+      WHERE (OXEP."ID_Order" = @prm_ID) AND (OXEP."isDeleted" = 0)
+      ORDER BY EP."PhysicalPointCode"
+    </SQL>
+  </EntryPoints_RGN>
+
+  <UsersXEntryPoints_RGN>
+    <ID>select_UsersXEntryPointsbyID_User</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT E.* FROM "UsersXEntryPoints_RGN" UXE
+      LEFT JOIN "EntryPoints_RGN" E ON (UXE."ID_EntryPoint" = E."ID")
+      WHERE (UXE."ID_User" = @prm_ID_User) AND (UXE."isChecked" = 1)
+    </SQL>
+  </UsersXEntryPoints_RGN>
+
+  <Counties>
+    <ID>select_Counties</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "Counties"
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1) AND ("isDeleted" = 0)
+    </SQL>
+  </Counties>
+  
+  <AssetTypes>
+    <ID>select_AssetTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT AT.*, 
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance", 
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1"
+      FROM "AssetTypes" AT
+      LEFT JOIN "TradeParameters" TP ON (AT."ID" = TP."ID_AssetType")
+      WHERE ((AT."ID" = @prm_ID) OR (@prm_ID = -1)) AND ("isDeleted" = 0) AND (("ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      ORDER BY AT."Name"
+    </SQL>
+  </AssetTypes>
+
+  <AssetTypes>
+    <ID>select_WebAssetTypes_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT --AT."Code", 
+      CASE WHEN AT."Name" LIKE 'fld_AssetType_Name%' THEN TRN."Value_EN" ELSE AT."Name" END AS "Name",
+      CASE WHEN AT."Description" LIKE 'fld_AssetType_Description%' THEN TRN."Value_EN" ELSE AT."Description" END AS "Description"
+      FROM "AssetTypes" AT
+      LEFT JOIN "Translations" TRN ON (AT."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (AT."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (AT."ID_Ring" = @prm_ID_Ring) AND (AT."isDeleted" = 0)
+    </SQL>
+  </AssetTypes>
+  
+  <AssetTypes>
+    <ID>select_WebAssetTypes_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT --AT."Code", 
+      CASE WHEN AT."Name" LIKE 'fld_AssetType_Name%' THEN TRN."Value_RO" ELSE AT."Name" END AS "Nume",
+      CASE WHEN AT."Description" LIKE 'fld_AssetType_Description%' THEN TRN."Value_RO" ELSE AT."Description" END AS "Descriere"
+      FROM "AssetTypes" AT
+      LEFT JOIN "Translations" TRN ON (AT."Name" = CAST(TRN."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      LEFT JOIN "Translations" TRD ON (AT."Description" = CAST(TRD."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE (AT."ID_Ring" = @prm_ID_Ring) AND (AT."isDeleted" = 0)
+    </SQL>
+  </AssetTypes>
+
+  <AssetSchedules>
+    <ID>select_AssetSchedules</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.*,
+      CONCAT(
+      CASE T."daySunday" WHEN 1 THEN 'Su' ELSE '' END, ' ',
+      CASE T."dayMonday" WHEN 1 THEN 'Mo' ELSE '' END, ' ',
+      CASE T."dayTuesday" WHEN 1 THEN 'Tu' ELSE '' END, ' ',
+      CASE T."dayWednesday" WHEN 1 THEN 'We' ELSE '' END, ' ',
+      CASE T."dayThursday" WHEN 1 THEN 'Th' ELSE '' END, ' ',
+      CASE T."dayFriday" WHEN 1 THEN 'Fr' ELSE '' END, ' ',
+      CASE T."daySaturday" WHEN 1 THEN 'Sa' ELSE '' END) AS "DaysOfWeekSTR"
+      FROM
+      (
+      SELECT ASCH.*,
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 1 WHEN 0 THEN 0 ELSE 1 END) AS "daySunday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 2 WHEN 0 THEN 0 ELSE 1 END) AS "dayMonday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 4 WHEN 0 THEN 0 ELSE 1 END) AS "dayTuesday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 8 WHEN 0 THEN 0 ELSE 1 END) AS "dayWednesday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 16 WHEN 0 THEN 0 ELSE 1 END) AS "dayThursday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 32 WHEN 0 THEN 0 ELSE 1 END) AS "dayFriday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 64 WHEN 0 THEN 0 ELSE 1 END) AS "daySaturday",
+
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance", 
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      IsNull(TP."SellWarrantyPercent", 0) AS "SellWarrantyPercent",
+      IsNull(TP."SellWarrantyMU", 0) AS "SellWarrantyMU",
+      IsNull(TP."SellWarrantyFixed", 0) AS "SellWarrantyFixed",
+      IsNUll(TP."BuyWarrantyPercent", 0) AS "BuyWarrantyPercent",
+      IsNull(TP."BuyWarrantyMU", 0) AS "BuyWarrantyMU",
+      IsNull(TP."BuyWarrantyFixed", 0) AS "BuyWarrantyFixed"
+      
+      FROM "AssetSchedules" ASCH
+      LEFT JOIN "Assets" A ON (ASCH."ID_Asset" = A."ID")
+      LEFT JOIN "TradeParameters" TP ON (ASCH."ID" = TP."ID_AssetSchedule")
+      WHERE ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((ASCH."ID" = @prm_ID_AssetSchedule) OR (@prm_ID_AssetSchedule = -1))
+      AND (ASCH."isActive" = 1)
+      ) T
+    </SQL>
+  </AssetSchedules>
+
+  <Currencies>
+    <ID>select_Currencies</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C.*, 
+      CASE WHEN C."Name" LIKE 'fld_Currency%' THEN CASE @prm_Language WHEN 'EN' THEN TR."Value_EN" ELSE TR."Value_RO" END ELSE C."Name" END AS "NameTR",
+      IsNull(TR."Value_EN", C."Name") AS "Name_EN", IsNull(TR."Value_RO", C."Name") AS "Name_RO"
+      FROM "Currencies"  C
+      LEFT JOIN "Translations" TR ON (C."Name" = CAST(TR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE ((C."ID" = @prm_ID_Currency) OR (@prm_ID_Currency = -1)) AND (C."isDeleted" = 0)
+    </SQL>
+  </Currencies>
+
+  <MeasuringUnits>
+    <ID>select_MeasuringUnits</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT MU.*, 
+      CASE WHEN MU."Name" LIKE 'fld_MeasuringUnit%' THEN CASE @prm_Language WHEN 'EN' THEN TR."Value_EN" ELSE TR."Value_RO" END ELSE MU."Name" END AS "NameTR",
+      IsNull(TR."Value_EN", MU."Name") AS "Name_EN", IsNull(TR."Value_RO", MU."Name") AS "Name_RO"
+      FROM "MeasuringUnits" MU
+      LEFT JOIN "Translations" TR ON (MU."Name" = CAST(TR."Label" COLLATE SQL_Latin1_General_CP1_CI_AS AS VARCHAR(150)))
+      WHERE ((MU."ID" = @prm_ID_MeasuringUnit) OR (@prm_ID_MeasuringUnit = -1)) AND (MU."isDeleted" = 0)
+    </SQL>
+  </MeasuringUnits>
+
+  <CPV>
+    <ID>select_CPVS</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "CPV" C
+      WHERE ((C."ID" = @prm_ID_CPV) OR (@prm_ID_CPV = -1))
+      --AND ((C."Code" LIKE @prm_Key + '%') OR (@prm_Key = ''))
+      AND (((C."Code" LIKE @prm_Key + '%') OR (@prm_Key = '')) OR ((C."Name_RO" LIKE @prm_Key + '%') OR (@prm_Key = '')) OR ((C."Name_EN" LIKE @prm_Key + '%') OR (@prm_Key = '')))
+      AND ("isDeleted" = 0)
+    </SQL>
+  </CPV>
+
+  <CAEN>
+    <ID>select_CAENS</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "CAEN" C
+      WHERE ((C."ID" = @prm_ID_CAEN) OR (@prm_ID_CAEN = -1)) AND ("isDeleted" = 0)
+    </SQL>
+  </CAEN>
+
+  <Terminals>
+    <ID>select_Terminals</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "Terminals" T
+      LEFT JOIN "Addresses" A ON (T."ID_Address" = A."ID")
+      WHERE ((T."ID" = @prm_ID_Terminal) OR (@prm_ID_Terminal = -1)) AND ("isDeleted" = 0)
+    </SQL>
+  </Terminals>
+
+   <Terminals>
+    <ID>select_WebTerminals_EN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Name", T."Chairman", T."CEO", A."StreetAddress" AS "Address", A."City", T."Phone", T."Fax", T."Email"
+      FROM "Terminals" T
+      LEFT JOIN "Addresses" A ON (T."ID_Address" = A."ID")
+      WHERE ((T."ID" = @prm_ID_Terminal) OR (@prm_ID_Terminal = -1)) AND ("isDeleted" = 0) AND ("isActive" = 1)
+      ORDER BY T."Code"
+    </SQL>
+  </Terminals>
+
+   <Terminals>
+    <ID>select_WebTerminals_RO</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID", T."Name" AS "Denumire", T."Chairman" AS "Presedinte", T."CEO", A."StreetAddress" AS "Adresa", A."City" AS "Oras", 
+      T."Phone" AS "Telefon", T."Fax", T."Email"
+      FROM "Terminals" T
+      LEFT JOIN "Addresses" A ON (T."ID_Address" = A."ID")
+      WHERE ((T."ID" = @prm_ID_Terminal) OR (@prm_ID_Terminal = -1)) AND ("isDeleted" = 0) AND ("isActive" = 1)
+      ORDER BY T."Code"
+    </SQL>
+  </Terminals>
+
+  <Documents>
+    <ID>select_DocumentTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * 
+      FROM "DocumentTypes" DT
+      WHERE (DT."ID" = @prm_ID_DocumentType) OR (@prm_ID_DocumentType = -1) 
+      AND ("ID_Bursary" = @prm_ID_Bursary) AND ("isDeleted" = 0)      
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>select_Documents</ID>
+    <SQLType>1</SQLType>
+    <SQL>      
+      SELECT DT."Name" AS "DocumentType", IsNull(A."Name", '') AS "AssetName", U."LoginName" AS "User", D.*
+      FROM "Documents" D
+      LEFT JOIN "DocumentTypes" DT ON (D."ID_DocumentType" = DT."ID")
+      LEFT JOIN "Users" U ON (D."ID_CreatedByUser" = U."ID")
+      LEFT JOIN "Assets" A ON (D."ID_Asset" = A."ID")
+      WHERE ((D."ID" = @prm_ID_Document) OR (@prm_ID_Document = -1)) 
+      AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))  AND (D."isDeleted" = 0)
+      AND ((D."isPublic" = @prm_isPublic) OR (@prm_isPublic = -1))
+    </SQL>
+  </Documents>
+  
+  <WarrantyTypes>
+    <ID>select_WarrantyTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "WarrantyTypes" WT
+      WHERE (WT."ID" = @prm_ID_WarrantyType) OR (@prm_ID_WarrantyType = -1) AND ("isDeleted" = 0)
+    </SQL>
+  </WarrantyTypes>
+
+  <BO_Operations>
+    <ID>select_BO_Operations</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM 
+      (
+	      SELECT OP."ID", C."ID" AS "ID_Client", AG."ID" AS "ID_Agency", 0 AS "ID_Asset", 
+	      C."Name" AS "ClientName", OP."Number", WT."ID" AS "ID_WarrantyType", WT."Name" AS "WarrantyType", OP."Date" AS "DepositDate",
+	      OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate", OPDP."Sum" * OPDP."Percent" * OPDP."ExchangeRate" AS "ValueInRON",
+	      '' AS "Asset", OPT."Code" AS "TransactionType", OPDP."Sum" AS "ValueInCurrency", OPDP."ID_Currency", OPDP."ExchangeRate"
+	      FROM "BO_Operations" OP
+	      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+	      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+	      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+	      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+	      LEFT JOIN "Clients" C ON (OPXD."ID_ClientSRC" = C."ID")
+	      LEFT JOIN "Agencies" AG ON (C."ID_Agency" = AG."ID")
+	      WHERE (OPT."Code" = 'CRED_WAR') AND ((OPXD."ID_ClientSRC" = @prm_ID_Client) OR (@prm_ID_Client = -1)) AND (OP."isCanceled" = 0) 
+	      AND ((AG."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (OPDP."Sum" != 0)
+
+	      UNION
+
+	      SELECT OP."ID", C."ID" AS "ID_Client", AG."ID" AS "ID_Agency", ASS."ID" AS "ID_Asset", 
+	      C."Name" AS "ClientName", OP."Number", 0 AS "ID_WarrantyType", OPT."Name" AS "WarrantyType", OP."Date" AS "DepositDate",  '' AS "ValabilityStartDate",
+	      '' AS "ValabilityEndDate", '' AS "ExecutionDate", OPDA."Amount" AS "ValueInRON", IsNUll(ASS."Name", '') AS "Asset", OPT."Code" AS "TransactionType", OPDA."Amount" AS "ValueInCurrency", 
+	      (SELECT TOP 1 "ID" FROM "Currencies" WHERE "Code" = 'Lei') AS "ID_Currency", 1 AS "ExchangeRate"
+	      FROM "BO_Operations" OP
+	      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+	      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+	      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+	      LEFT JOIN "Clients" C ON (OPXD."ID_ClientSRC" = C."ID")
+	      LEFT JOIN "Agencies" AG ON (C."ID_Agency" = AG."ID")
+	      LEFT JOIN "Assets" ASS ON (OPDA."ID_Asset" = ASS."ID")
+	      WHERE (OPT."Code" = 'LOCK_WAR') AND ((OPXD."ID_ClientSRC" = @prm_ID_Client) OR (@prm_ID_Client = -1)) AND (OP."isCanceled" = 0) 
+	      AND ((AG."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (OPDA."Amount" !=0)
+      )T
+      ORDER BY "ClientName" ASC
+    </SQL>
+  </BO_Operations>
+
+  <BO_Operations>
+    <ID>select_BO_OperationSummary</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T."ID_WarrantyType", T."WarrantyTypeCode", T."WarrantyType", TT."ID_Client", TT."ClientName", TT."ID_Asset", TT."Asset", TT."TotalValue" FROM
+      (
+      SELECT 0 AS "ID_WarrantyType", 'SYS' AS "WarrantyTypeCode", 'Sys Op' AS "WarrantyType" UNION ALL
+      SELECT WT."ID", WT."Code", WT."Name" FROM "WarrantyTypes" WT
+      WHERE WT."isDeleted" = 0
+      ) T
+      LEFT JOIN
+      (
+      SELECT T."ID_WarrantyType", T."WarrantyType", T."ID_Client", T."ClientName", T."ID_Asset", A."Name" AS "Asset", SUM(T."ValueInCurrency" * T."ExchangeRate") AS "TotalValue" FROM
+      (
+      SELECT OP."ID", C."ID" AS "ID_Client", AG."ID" AS "ID_Agency", 0 AS "ID_Asset",
+      C."Name" AS "ClientName", OP."Number", WT."ID" AS "ID_WarrantyType", WT."Name" AS "WarrantyType", OP."Date" AS "DepositDate",
+      OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate", OPDP."Sum" * OPDP."Percent" * OPDP."ExchangeRate" AS "ValueInRON",
+      '' AS "Asset", OPT."Code" AS "TransactionType", OPDP."Sum" AS "ValueInCurrency", OPDP."ID_Currency", OPDP."ExchangeRate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+      LEFT JOIN "Clients" C ON (OPXD."ID_ClientSRC" = C."ID")
+      LEFT JOIN "Agencies" AG ON (C."ID_Agency" = AG."ID")
+      WHERE (OPT."Code" = 'CRED_WAR') AND ((OPXD."ID_ClientSRC" = @prm_ID_Client) OR (@prm_ID_Client = -1)) AND (OP."isCanceled" = 0)
+      AND ((AG."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (OPDP."Sum" != 0)
+
+      UNION
+
+      SELECT OP."ID", C."ID" AS "ID_Client", AG."ID" AS "ID_Agency", ASS."ID" AS "ID_Asset",
+      C."Name" AS "ClientName", OP."Number", 0 AS "ID_WarrantyType", OPT."Name" AS "WarrantyType", OP."Date" AS "DepositDate",  '' AS "ValabilityStartDate",
+      '' AS "ValabilityEndDate", '' AS "ExecutionDate", OPDA."Amount" AS "ValueInRON", IsNUll(ASS."Name", '') AS "Asset", OPT."Code" AS "TransactionType", OPDA."Amount" AS "ValueInCurrency",
+      (SELECT TOP 1 "ID" FROM "Currencies" WHERE "Code" = 'Lei') AS "ID_Currency", 1 AS "ExchangeRate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+      LEFT JOIN "Clients" C ON (OPXD."ID_ClientSRC" = C."ID")
+      LEFT JOIN "Agencies" AG ON (C."ID_Agency" = AG."ID")
+      LEFT JOIN "Assets" ASS ON (OPDA."ID_Asset" = ASS."ID")
+      WHERE (OPT."Code" = 'LOCK_WAR') AND ((OPXD."ID_ClientSRC" = @prm_ID_Client) OR (@prm_ID_Client = -1)) AND (OP."isCanceled" = 0)
+      AND ((AG."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)) AND (OPDA."Amount" !=0)
+      )T
+      LEFT JOIN "Assets" A ON (T."ID_Asset" = A."ID")
+      GROUP BY T."ID_WarrantyType", T."WarrantyType", T."ID_Client", T."ClientName", T."ID_Asset", A."Name"
+      ) TT ON (T."ID_WarrantyType" = TT."ID_WarrantyType")
+    </SQL>
+  </BO_Operations>
+  
+  <!--<BO_Operations>
+    <ID>select_BO_Operations</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      /*SELECT W."ID", A."Name" AS "Agency", C."Name" AS "Client", WT."Name" AS "WarrantyType", ASS."Name" AS "Asset", U."LoginName" AS "Username",
+      CU."Name" AS "Currency", W."ValabilityStartDate", W."ValabilityEndDate", W."ExecutionDate", W."ValueInRON", W."ValueInCurrency",
+      W."ExchangeRate", W."DateCreated", W."WarrantyNumber", W."ID_WarrantyType", W."ID_Agency", W."ID_Client", W."ID_Asset", W."ID_Currency"
+      FROM "Warranties" W
+      LEFT JOIN "Agencies" A ON (A."ID" = W."ID_Agency")
+      LEFT JOIN "Clients" C ON (C."ID" = W."ID_Client")
+      LEFT JOIN "WarrantyTypes" WT ON (W."ID_WarrantyType" = WT."ID")
+      LEFT JOIN "Assets" ASS ON (ASS."ID" = W."ID_Asset")
+      LEFT JOIN "Users" U ON (U."ID" = W."ID_CreatedByUser")
+      LEFT JOIN "Currencies" CU ON (CU."ID" = W."ID_Currency")
+      WHERE ((W."ID" = @prm_ID_Warranty) OR (@prm_ID_Warranty = -1)) AND (W."isDeleted" = 0)*/
+
+      SELECT BO."ID", WT."Name" AS "WarrantyType", IsNull(AG."Name", '-') AS "Agency", C."Name" AS "Client", IsNull(A."Name", '-') AS "Asset", BO."Reference" AS "WarrantyNumber", CU."Name" AS "Currency", (BODP."Sum"*BODP."Percent") AS "ValueInCurrency", (BODP."Sum"*BODP."Percent"*BODP."ExchangeRate") AS "ValueInRON", "ExchangeRate", U."LoginName" AS "Username", BO."Date" AS "DateCreated", BODP."ValabilityStartDate", BODP."ValabilityEndDate", BODP."ExecutionDate", BOXD."ID_Asset", BOXD."ID_ClientSRC", BODP."ID_PaymentType", BODP."ID_Currency"
+      FROM "BO_Operations" BO
+      LEFT JOIN "BO_OperationTypes" BOT ON (BO."ID_OperationType" = BOT."ID") AND (BOT."Code" = 'warr_coll')
+      LEFT JOIN "BO_OperationsXDetails" BOXD ON (BO."ID" = BOXD."ID_Operation") AND (BOXD."isCanceled" = 0)
+      LEFT JOIN "BO_OperationDetails_Payments" BODP ON (BOXD."ID_OperationDetail" = BODP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (BODP."ID_PaymentType" = WT."ID")
+      LEFT JOIN "Clients" C ON (BOXD."ID_ClientSRC" = C."ID")
+      LEFT JOIN "Agencies" AG ON (BOXD."ID_AgencySRC" = AG."ID")
+      LEFT JOIN "Assets" A ON (BOXD."ID_Asset" = A."ID")
+      LEFT JOIN "Currencies" CU ON (BODP."ID_Currency" = CU."ID")
+      LEFT JOIN "Users" U ON (BOXD."ID_CreatedByUser" = U."ID")
+      WHERE ((BO."ID" = @prm_ID_BOperation) OR (@prm_ID_BOperation = -1)) AND (BO."isCanceled" = 0) AND ((BOXD."ID_ClientSRC" = @prm_ID_Client) OR (@prm_ID_Client = -1)) AND ((BOXD."ID_AgencySRC" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+    </SQL>
+  </BO_Operations>-->
+
+  <BO_Operations>
+    <ID>select_AssetWarranties</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C."Name", OPDA."Amount" AS "Locked"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+      LEFT JOIN "Assets" A ON (OPDA."ID_Asset" = A."ID")
+      LEFT JOIN "AssetsXClients" AXC ON (A."ID" = AXC."ID_Asset")
+      LEFT JOIN "Clients" C ON (AXC."ID_Client" = C."ID")
+      WHERE (OPT."Code" = 'LOCK_WAR') AND (OP."isCanceled" = 0) AND (OPDA."Amount" != 0) AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+    </SQL>
+  </BO_Operations>
+
+  <Translations>
+    <ID>select_Translations</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.*, CASE WHEN T."Label" LIKE 'fld%' THEN 0 ELSE 1 END AS "sys"
+      FROM "Translations" T
+      WHERE (("ID" = @prm_ID_Translation) OR (@prm_ID_Translation = -1)) 
+      AND ((@prm_SysLabels = -1) OR ((@prm_SysLabels = 1) AND ("Label" NOT LIKE 'fld_%')) OR ((@prm_SysLabels = 0) AND ("Label" LIKE 'fld_%')))
+      AND (("Label" = @prm_Label) OR (@prm_Label = '')) AND ("isDeleted" = 0)
+    </SQL>
+  </Translations>
+  
+<Transactions>
+    <ID>select_Statistics</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT (
+      --all time transactions
+	      SELECT COUNT(*)
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      )  AS 'TransactionsNrAllTime' ,
+      (
+      --last month transactions
+	      SELECT COUNT(*) 
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (T."Date" BETWEEN DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE())-1, 0) AND DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,GETDATE()),0)))
+      ) AS 'TransactionsNrLastMonth' ,
+      (
+      --current month transactions
+	      SELECT COUNT(*) 
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (T."Date" BETWEEN DATEADD(mm, DATEDIFF(mm, 0, GETDATE()), 0) AND DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, GETDATE()) + 1, 0)))
+      ) AS 'TransactionsNrCurrentMonth',
+
+      (
+      --all time transactions
+	      SELECT SUM("Quantity" * "Price")
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      )  AS 'TransactionsValueAllTime' ,
+      (
+      --last month transactions
+	      SELECT SUM("Quantity" * "Price")
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (T."Date" BETWEEN DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE())-1, 0) AND DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,GETDATE()),0)))
+      ) AS 'TransactionsValueLastMonth' ,
+      (
+      --current month transactions
+	      SELECT SUM("Quantity" * "Price")
+	      FROM "Transactions" T
+	      LEFT JOIN "Rings" R ON (T."ID_Ring" = R."ID")
+	      LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (T."Date" BETWEEN DATEADD(mm, DATEDIFF(mm, 0, GETDATE()), 0) AND DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, GETDATE()) + 1, 0)))
+      ) AS 'TransactionsValueCurrentMonth',
+      
+      (
+        --all time sessions
+	      SELECT COUNT(*)
+		    FROM "AssetSessions" ASS
+		    LEFT JOIN "Rings" R ON (ASS."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+		    WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      )  AS 'AssetSessionsAllTime' ,
+      (
+        --last month sessions
+		    SELECT COUNT(*)
+		    FROM "AssetSessions" ASS
+		    LEFT JOIN "Rings" R ON (ASS."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (ASS."Date" BETWEEN DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE())-1, 0) AND DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,GETDATE()),0)))
+      ) AS 'AssetSessionsLastMonth' ,
+      (
+      --current month sessions
+	      SELECT COUNT(*)
+		    FROM "AssetSessions" ASS
+		    LEFT JOIN "Rings" R ON (ASS."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (ASS."Date" BETWEEN DATEADD(mm, DATEDIFF(mm, 0, GETDATE()), 0) AND DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, GETDATE()) + 1, 0)))
+      ) AS 'AssetSessionsCurrentMonth',
+      
+      (
+      --all time orders
+	      SELECT COUNT(*)
+		    FROM "Orders" O
+		    LEFT JOIN "Rings" R ON (O."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+		    WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      )  AS 'OrdersAllTime' ,
+      (
+        --last month orders
+		    SELECT COUNT(*)
+		    FROM "Orders" O
+		    LEFT JOIN "Rings" R ON (O."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (O."Date" BETWEEN DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE())-1, 0) AND DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,GETDATE()),0)))
+      ) AS 'OrdersLastMonth' ,
+      (
+      --current month orders
+	      SELECT COUNT(*)
+		    FROM "Orders" O
+		    LEFT JOIN "Rings" R ON (O."ID_Ring" = R."ID")
+		    LEFT JOIN "Markets" M ON (R."ID_Market" = M."ID")
+	      WHERE ((M."ID" = @prm_ID_Market) OR (@prm_ID_Market = -1)) AND (O."Date" BETWEEN DATEADD(mm, DATEDIFF(mm, 0, GETDATE()), 0) AND DATEADD (dd, -1, DATEADD(mm, DATEDIFF(mm, 0, GETDATE()) + 1, 0)))
+      ) AS 'OrdersCurrentMonth'
+    </SQL>
+  </Transactions>
+
+  <BO_OperationsBuffer>
+    <ID>select_BO_OperationsBuffer</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "BO_OperationsBuffer"
+      WHERE ("ID" = @prm_ID_BOperationBuffer) OR (@prm_ID_BOperationBuffer = -1) AND ("isProcessed" = 0)
+    </SQL>
+  </BO_OperationsBuffer>
+
+  <Nomenclators>
+    <ID>select_ContractTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "ContractTypes"
+      WHERE "isDeleted" = 0
+    </SQL>
+  </Nomenclators>
+
+  <Nomenclators>
+    <ID>select_ProcedureTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "ProcedureTypes"
+      WHERE "isDeleted" = 0
+    </SQL>
+  </Nomenclators>
+
+   <Nomenclators>
+    <ID>select_ProcedureCriteria</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "ProcedureCriteria"
+      WHERE "isDeleted" = 0
+    </SQL>
+  </Nomenclators>
+
+  <Nomenclators>
+    <ID>select_ProcedureLegislations</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "ProcedureLegislations"
+      WHERE "isDeleted" = 0
+    </SQL>
+  </Nomenclators>
+  
+  <Procedures>
+    <ID>select_Procedures</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP #prm_QueryLimit P.*,
+      PO."Forms", PO."EconomicCapacity", PO."TechnicalCapacity", 
+      PO."ClarificationRequestsDeadline", PO."TendersReceiptDeadline", PO."TendersOpeningDate", 
+      PO."ContestationsSubmission", PO."OtherInformation", PO."Necessity",
+      IsNull 
+      (
+  	      (SELECT '[' + STUFF(
+	      (
+		      SELECT ', ' + CAST(PC."ID_CPV" AS VARCHAR(50))
+		      FROM "ProcedureClassification" PC
+		      WHERE PC."ID_Procedure" = P."ID"
+		      FOR XML PATH('')
+	      ), 1, 1, '') + ']')
+      , '[]') AS "ClassificationIDs",
+      IsNull 
+      (
+  	      (SELECT STUFF(
+	      (
+		      SELECT ', ' + CPV."Code"
+		      FROM "ProcedureClassification" PC
+		      LEFT JOIN "CPV" CPV ON (PC."ID_CPV" = CPV."ID")
+		      WHERE PC."ID_Procedure" = P."ID"
+		      FOR XML PATH('')
+	      ), 1, 1, ''))
+      , '[]') AS "Classification",
+
+      CI."CompanyName" AS "OrganizationName", CI."FiscalCode" AS "OrganizationFiscalCode", 
+      CI."Phone" AS "OrganizationPhone", CI."Mobile" AS "OrganizationMobile", CI."Fax" AS "OrganizationFax",
+      CI."Email" AS "OrganizationEmail", CI."Website" AS "OrganizationWebsite",
+
+      BI."FirstName" + ' ' + BI."LastName" AS "ContactName", IsNull(BI."Phone", BI."Mobile") AS "ContactPhone", BI."Email" AS "ContactEmail",
+      AW."Name" AS "AgencyWinnerName", IW."Email" AS "AgencyWinnerEmail"
+
+      FROM "Procedures" P
+      LEFT JOIN "ProcedureOptions" PO ON (P."ID" = PO."ID_Procedure")
+      LEFT JOIN "Agencies" A ON (P."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (P."ID_Client" = C."ID") AND (C."isHouse" = 1)
+      LEFT JOIN "Identities" CI ON (C."ID" = CI."ID_Client") AND (A."ID" = CI."ID_Agency")
+      LEFT JOIN "Identities" BI ON (P."ID_Broker" = BI."ID_Broker")
+      LEFT JOIN "Agencies" AW ON (P."ID_AgencyWinner" = AW."ID")
+      LEFT JOIN "Identities" IW ON (AW."ID" = IW."ID_Agency")
+      WHERE ((P."ID" = @prm_ID_Procedure) OR (@prm_ID_Procedure = -1))
+      AND ((P."ID_ContractType" = @prm_ID_ContractType) OR (@prm_ID_ContractType = -1)) 
+      AND ((P."ID_ProcedureType" = @prm_ID_ProcedureType) OR (@prm_ID_ProcedureType = -1))
+      AND ((P."ID_ProcedureCriterion" = @prm_ID_ProcedureCriterion) OR (@prm_ID_ProcedureCriterion = -1))
+      AND ((P."Status" = @prm_Status) OR (@prm_Status = ''))
+      AND ((P."Name" LIKE '%' + @prm_QueryKeyword + '%') OR (P."Description" LIKE '%' + @prm_QueryKeyword + '%') OR (@prm_QueryKeyword = ''))
+      AND (P."isDeleted" = 0)
+      ORDER BY P."#prm_SortField" #prm_SortOrder
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>select_ProcedureVariables</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      EXEC "GetProcedureVariables" @prm_ID_Procedure
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>select_ProcedureParticipants</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DISTINCT B."ID_Agency", A."Name", I."Email", U."LoginName", U."Email"
+      FROM "ProcedureDocuments" PD
+      LEFT JOIN "Brokers" B ON (PD."ID_CreatedByUser" = B."ID_User")
+      LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+      LEFT JOIN "Identities" I ON (A."ID" = I."ID_Agency")
+      LEFT JOIN "Users" U ON (B."ID_User" = U."ID")
+      WHERE PD."ID_Procedure" = @prm_ID_Procedure
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>select_ParticipantProcedures</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DISTINCT P.* FROM "Brokers" B
+      LEFT JOIN "ProcedureDocuments" PD ON (B."ID_User" = PD."ID_CreatedByUser")
+      LEFT JOIN "Procedures" P ON (PD."ID_Procedure" = P."ID")
+      WHERE B."ID_Agency" = @prm_ID_Agency
+    </SQL>
+  </Procedures>
+
+  <ProcedureExportTemplates>
+    <ID>select_ProcedureExportTemplates</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT F."ID" AS "ID_Form", F."Name" AS "FormName", PET."ID" AS "ID_ExportTemplate", PET."FileName", PET."Date_Generated" 
+      FROM "ProcedureExportTemplates" PET
+      LEFT JOIN "Forms" F ON (PET."ID_Form" = F."ID")
+      WHERE "ID_Procedure" = @prm_ID_Procedure
+    </SQL>
+  </ProcedureExportTemplates>
+
+  <ProcedureExportTemplates>
+    <ID>select_ExportTemplate</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT PET."FileName", PET."Date_Generated", PET."Content" 
+      FROM "ProcedureExportTemplates" PET
+      LEFT JOIN "Forms" F ON (PET."ID_Form" = F."ID")
+      WHERE ((PET."ID" = @prm_ID_ExportTemplate) OR (@prm_ID_ExportTemplate = -1))
+      AND (((PET."ID_Procedure" = @prm_ID_Procedure) AND (F."Step" = @prm_Step) AND (F."isActive" = 1)) OR (@prm_ID_Procedure = -1) OR (@prm_Step = -1))
+    </SQL>
+  </ProcedureExportTemplates>
+
+  <ProcedureDocuments>
+    <ID>select_ProcedureDocuments</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT P."Name" AS "ProcedureName", D.*,
+      B."ID" AS "ID_Broker", A."ID" AS "ID_Agency", C."ID" AS "ID_CLient", A."Name" AS "AgencyName", C."Name" AS "ClientName"
+      FROM "ProcedureDocuments" D
+      LEFT JOIN "Procedures" P ON (D."ID_Procedure" = P."ID")
+      LEFT JOIN "Brokers" B ON (D."ID_CreatedByUser" = B."ID_User")
+      LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency")
+      WHERE ((D."ID" = @prm_ID_Document) OR (@prm_ID_Document = -1))
+      AND ((D."ID_Procedure" = @prm_ID_Procedure) OR (@prm_ID_Procedure = -1))
+      AND (D."isDeleted" = 0)
+    </SQL>
+  </ProcedureDocuments>
+
+  <FavouriteProcedures>
+    <ID>select_FavouriteProcedures</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT P.*,
+      PO."Forms", PO."EconomicCapacity", PO."TechnicalCapacity",
+      PO."ClarificationRequestsDeadline", PO."TendersReceiptDeadline", PO."TendersOpeningDate",
+      PO."ContestationsSubmission", PO."OtherInformation", PO."Necessity",
+      IsNull
+      (
+      (SELECT '[' + STUFF(
+      (
+      SELECT ', ' + CAST(PC."ID_CPV" AS VARCHAR(50))
+      FROM "ProcedureClassification" PC
+      WHERE PC."ID_Procedure" = P."ID"
+      FOR XML PATH('')
+      ), 1, 1, '') + ']')
+      , '[]') AS "ClassificationIDs",
+      IsNull
+      (
+      (SELECT STUFF(
+      (
+      SELECT ', ' + CPV."Code"
+      FROM "ProcedureClassification" PC
+      LEFT JOIN "CPV" CPV ON (PC."ID_CPV" = CPV."ID")
+      WHERE PC."ID_Procedure" = P."ID"
+      FOR XML PATH('')
+      ), 1, 1, ''))
+      , '[]') AS "Classification",
+
+      CI."CompanyName" AS "OrganizationName", CI."FiscalCode" AS "OrganizationFiscalCode",
+      CI."Phone" AS "OrganizationPhone", CI."Mobile" AS "OrganizationMobile", CI."Fax" AS "OrganizationFax",
+      CI."Email" AS "OrganizationEmail", CI."Website" AS "OrganizationWebsite",
+
+      BI."FirstName" + ' ' + BI."LastName" AS "ContactName", IsNull(BI."Phone", BI."Mobile") AS "ContactPhone", BI."Email" AS "ContactEmail"
+      FROM "FavouriteProcedures" FP
+      LEFT JOIN "Procedures" P ON (FP."ID_Procedure" = P."ID")
+      LEFT JOIN "ProcedureOptions" PO ON (P."ID" = PO."ID_Procedure")
+      LEFT JOIN "Agencies" A ON (P."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (P."ID_Client" = C."ID") AND (C."isHouse" = 1)
+      LEFT JOIN "Identities" CI ON (C."ID" = CI."ID_Client") AND (A."ID" = CI."ID_Agency")
+      LEFT JOIN "Identities" BI ON (P."ID_Broker" = BI."ID_Broker")
+      WHERE FP."ID_Client" = @prm_ID_Client
+    </SQL>
+  </FavouriteProcedures>
+
+  <Forms>
+    <ID>select_Forms</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Forms" 
+      WHERE (("Step" = @prm_Step) OR (@prm_Step = -1)) 
+      AND (("isActive" = @prm_isActive) OR (@prm_isActive = -1))
+      AND ("isDeleted" = 0)
+    </SQL>
+  </Forms>
+  
+  <REMIT_DataSources>
+    <ID>select_REMIT_DataSources</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_DataSources"
+      WHERE ("isDeleted" = 0) AND (("DataSourceType" = @prm_DataSourceType) OR (@prm_DataSourceType = ''))
+    </SQL>
+  </REMIT_DataSources>
+  
+  <REMIT_ContractNames>
+    <ID>select_REMIT_ContractNames</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_ContractNames"
+      WHERE ("isDeleted" = 0) AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+    </SQL>
+  </REMIT_ContractNames>
+  
+  <REMIT_ContractTypes>
+    <ID>select_REMIT_ContractTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_ContractTypes"
+      WHERE ("isDeleted" = 0) AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+      AND (("enableTable1" = @prm_enableTable1) OR (@prm_enableTable1 = -1))
+      AND (("enableTable2" = @prm_enableTable2) OR (@prm_enableTable2 = -1))
+    </SQL>
+  </REMIT_ContractTypes>
+
+  <REMIT_LoadTypes>
+    <ID>select_REMIT_LoadTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_LoadTypes" 
+      WHERE ("isDeleted" = 0) AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+    </SQL>
+  </REMIT_LoadTypes>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistory_XLS</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 100 DSH."ID", /*"ID_REMIT_DataSource",*/ DSH."Date", DSH."InputDataName", DSH."Status", DSH."isProcessed", DSH."hasError",
+      CASE WHEN IsNull(DSH."ProcessLog", '') = '' THEN '' ELSE 'log' END AS "ProcessLog",
+      IsNull(DSH."OutputDataName", '') AS "OutputDataName", 
+      CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 'upload' ELSE 'receipt' END AS "ReceiptDataName"
+      FROM "REMIT_DataSources" DS
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (DS."ID" = DSH."ID_REMIT_DataSource")
+      WHERE (DS."DataSourceType" = 'XLS')
+      AND ((@prm_QueryKeyword = '') OR (CONVERT(VARCHAR, DSH."Date", 120) LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."Status" LIKE '%' + @prm_QueryKeyword + '%')
+      OR (DSH."InputDataName" LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."OutputDataName" LIKE '%' + @prm_QueryKeyword + '%'))
+      ORDER BY "ID" DESC
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistory_Table1Reports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 100 DSH."ID", T1R."ID" AS "ID_Table1Report", T1R."isSubmitted", T1R."SubmitTimestamp",
+      CASE T1R."isSubmitted" WHEN 0 THEN 'Submit' ELSE '' END AS "Submit",
+      CASE T1R."isSubmitted" WHEN 0 THEN 'Edit' ELSE '' END AS "Edit",
+      DSH."Date", DSH."Status", DSH."isProcessed", DSH."hasError",
+      CASE WHEN IsNull(DSH."ProcessLog", '') = '' THEN '' ELSE 'log' END AS "ProcessLog",
+      IsNull(DSH."OutputDataName", '') AS "OutputDataName",
+      CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 'upload' ELSE 'receipt' END AS "ReceiptDataName"
+      FROM "REMIT_DataSources" DS
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (DS."ID" = DSH."ID_REMIT_DataSource")
+      LEFT JOIN "REMIT_Table1Reports" T1R ON (DSH."ID" = T1R."ID_DataSourceHistory")
+      WHERE (DS."DataSourceType" = 'Table1') AND ((T1R."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+      AND ((@prm_QueryKeyword = '') OR (CONVERT(VARCHAR, DSH."Date", 120) LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."Status" LIKE '%' + @prm_QueryKeyword + '%')
+      OR (DSH."InputDataName" LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."OutputDataName" LIKE '%' + @prm_QueryKeyword + '%'))
+      ORDER BY "ID" DESC
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistory_Table2Reports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 100 DSH."ID", T2R."ID" AS "ID_Table2Report", T2R."isSubmitted", T2R."SubmitTimestamp", 
+      CASE T2R."isSubmitted" WHEN 0 THEN 'Submit' ELSE '' END AS "Submit", 
+      CASE T2R."isSubmitted" WHEN 0 THEN 'Edit' ELSE '' END AS "Edit", 
+      DSH."Date", DSH."Status", DSH."isProcessed", DSH."hasError",
+      CASE WHEN IsNull(DSH."ProcessLog", '') = '' THEN '' ELSE 'log' END AS "ProcessLog",
+      IsNull(DSH."OutputDataName", '') AS "OutputDataName", 
+      CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 'upload' ELSE 'receipt' END AS "ReceiptDataName"
+      FROM "REMIT_DataSources" DS
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (DS."ID" = DSH."ID_REMIT_DataSource")
+      LEFT JOIN "REMIT_Table2Reports" T2R ON (DSH."ID" = T2R."ID_DataSourceHistory")
+      WHERE (DS."DataSourceType" = 'Table2') AND ((T2R."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+      AND ((@prm_QueryKeyword = '') OR (CONVERT(VARCHAR, DSH."Date", 120) LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."Status" LIKE '%' + @prm_QueryKeyword + '%')
+      OR (DSH."OutputDataName" LIKE '%' + @prm_QueryKeyword + '%'))
+      ORDER BY "ID" DESC
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistory_StorageReports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 100 DSH."ID", SR."ID" AS "ID_StorageReport", SR."isSubmitted", SR."SubmitTimestamp", 
+      CASE SR."isSubmitted" WHEN 0 THEN 'Submit' ELSE '' END AS "Submit", 
+      CASE SR."isSubmitted" WHEN 0 THEN 'Edit' ELSE '' END AS "Edit", 
+      DSH."Date", DSH."Status", DSH."isProcessed", DSH."hasError",
+      CASE WHEN IsNull(DSH."ProcessLog", '') = '' THEN '' ELSE 'log' END AS "ProcessLog",
+      IsNull(DSH."OutputDataName", '') AS "OutputDataName", 
+      CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 'upload' ELSE 'receipt' END AS "ReceiptDataName"
+      FROM "REMIT_DataSources" DS
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (DS."ID" = DSH."ID_REMIT_DataSource")
+      LEFT JOIN "REMIT_StorageReports" SR ON (DSH."ID" = SR."ID_DataSourceHistory")
+      WHERE (DS."DataSourceType" = 'NGStorage') AND ((SR."ID_Agency" = @prm_ID_Agency) OR (@prm_ID_Agency = -1))
+      AND ((@prm_QueryKeyword = '') OR (CONVERT(VARCHAR, DSH."Date", 120) LIKE '%' + @prm_QueryKeyword + '%') OR (DSH."Status" LIKE '%' + @prm_QueryKeyword + '%')
+      OR (DSH."OutputDataName" LIKE '%' + @prm_QueryKeyword + '%'))
+      ORDER BY "ID" DESC
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistoryProcessLog</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID", "ProcessLog" FROM "REMIT_DataSourceHistory"
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistoryOutputData</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID", "OutputDataName", "OutputData" FROM "REMIT_DataSourceHistory"
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>select_REMIT_DataSourceHistoryReceiptData</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID", IsNull("ReceiptDataName", 'not uploaded') AS "ReceiptDataName", "ReceiptData" FROM "REMIT_DataSourceHistory"
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_Participants>
+    <ID>select_REMIT_Participants</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM 
+      (
+        SELECT P.*, A."Name" FROM "REMIT_Participants" P
+        LEFT JOIN "Agencies" A ON (P."AgencyCode" = A."Code")
+        WHERE (A."ID" = @prm_ID_Agency) OR (@prm_ID_Agency = -1)
+      ) T
+      WHERE (@prm_QueryKeyword = '') OR ((T."AgencyCode" LIKE '%' + @prm_QueryKeyword + '%') OR (T."ParticipantCode" LIKE '%' + @prm_QueryKeyword + '%') OR (T."Name" LIKE '%' + @prm_QueryKeyword + '%'))
+    </SQL>
+  </REMIT_Participants>
+
+  <REMIT_Orders>
+    <ID>select_REMIT_Orders</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      DECLARE @prm_AgencyCode AS VARCHAR(50)
+      SELECT @prm_AgencyCode = "Code" FROM "Agencies" WHERE "ID" = @prm_ID_Agency
+
+      SELECT TOP 100 "ID", "ID_REMIT_DataSourceHistory" AS "ID_DataSourceHistory",
+      CASE
+      WHEN "ContractName" = 'BACKLOADING' THEN 'backload'
+      ELSE CASE "isTransacted" WHEN 0 THEN 'order' WHEN 1 THEN 'trade' END
+      END AS 'Trade',
+      "ParticipantCode", "OrderID", CASE "isInitiator" WHEN 0 THEN 'A' WHEN 1 THEN 'I' END AS "I/A",
+      "TransactionTimestamp" AS "Date/Time", "Volume", "VolumeMU" AS "MU", "NotionalQuantity" AS "N. Quantity", "NotionalQuantityMU" AS "N.Qty. MU",
+      "Price", "Currency", CONVERT(VARCHAR, "StartDeliveryDate", 102) AS "Start Delivery", CONVERT(VARCHAR, "EndDeliveryDate", 102) AS "End Delivery"
+      FROM "REMIT_Orders" O
+      WHERE (("AgencyCode" = @prm_AgencyCode) OR (-1 = -1))
+      AND ((@prm_QueryKeyword = '') OR (O."AgencyCode" LIKE '%' + @prm_QueryKeyword + '%') OR (O."OrderID" LIKE '%' + @prm_QueryKeyword + '%') OR (CONVERT(VARCHAR, O."TransactionTimestamp", 120) LIKE '%' + @prm_QueryKeyword + '%'))
+      ORDER BY "OrderID" DESC
+    </SQL>
+  </REMIT_Orders>
+
+  <REMIT_Orders>
+    <ID>select_REMIT_OrderDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O.*,
+      CONVERT(BIT, CASE IsNull(DS."OutputDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasOutput",
+      CONVERT(BIT, CASE IsNull(DS."ReceiptDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasReceipt"
+      FROM "REMIT_Orders" O
+      LEFT JOIN "REMIT_DataSourceHistory" DS ON (O."ID_REMIT_DataSourceHistory" = DS."ID")
+      WHERE O."ID" = @prm_ID
+    </SQL>
+  </REMIT_Orders>
+
+  <REMIT_Table1Reports>
+    <ID>select_REMIT_Table1ReportDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T1R.*, DSH."Date",
+      CONVERT(BIT, CASE IsNull(DSH."OutputDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasOutput",
+      CONVERT(BIT, CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasReceipt"
+      FROM "REMIT_Table1Reports" T1R
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (T1R."ID_DataSourceHistory" = DSH."ID")
+      WHERE T1R."ID" = @prm_ID
+    </SQL>
+  </REMIT_Table1Reports>
+
+  <REMIT_NonStandardContracts>
+    <ID>select_REMIT_ExistingParticipantIDs</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 0, 'ACER' AS "ParticipantIDType", '' AS "ParticipantID", '' AS "ParticipantMktID", 'New ID' AS "Text" UNION ALL
+      SELECT DISTINCT "ID", "ParticipantIDType", "ParticipantID", "ParticipantMktID", "ParticipantID" + '/' + "ParticipantMktID" AS "Text"
+      FROM "REMIT_Table1Reports"
+    </SQL>
+  </REMIT_NonStandardContracts>
+
+  <REMIT_NonStandardContracts>
+    <ID>select_REMIT_ExistingCounterpartIDs</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT 0, 'ACER' AS "CounterpartIDType", '' AS "CounterpartID", '' AS "CounterpartMktID", 'New ID' AS "Text" UNION ALL
+      SELECT DISTINCT "ID", "CounterpartIDType", "CounterpartID", "CounterpartMktID", "CounterpartID" + '/' + "CounterpartMktID" AS "Text"
+      FROM "REMIT_Table1Reports"
+    </SQL>
+  </REMIT_NonStandardContracts>
+
+  <REMIT_Table2Reports>
+    <ID>select_REMIT_Table2ReportDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T2R.*, DSH."Date",
+      CONVERT(BIT, CASE IsNull(DSH."OutputDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasOutput",
+      CONVERT(BIT, CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasReceipt"
+      FROM "REMIT_Table2Reports" T2R
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (T2R."ID_DataSourceHistory" = DSH."ID")
+      WHERE T2R."ID" = @prm_ID
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_Table2Reports>
+    <ID>select_REMIT_Table2VolumeOptionalities</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT ROW_NUMBER() OVER (ORDER BY V."ID") AS "RowID", V.* FROM "REMIT_Table2VolumeOptionalities" V
+      WHERE "ID_Table2Report" = @prm_ID_Table2Report
+      ORDER BY V."ID"
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_Table2Reports>
+    <ID>select_REMIT_Table2FixingIndexDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT ROW_NUMBER() OVER (ORDER BY F."ID") AS "RowID", F."ID", F."FixingIndex", F."ID_FixingIndexContractType", 
+      CT."Name" AS "FixingIndexType", F."FixingIndexSource", F."FirstFixingDate", F."LastFixingDate", F."FixingFrequency" FROM "REMIT_Table2FixingIndexDetails" F
+      LEFT JOIN "REMIT_ContractTypes" CT ON (F."ID_FixingIndexContractType" = CT."ID")
+      WHERE "ID_Table2Report" = @prm_ID_Table2Report
+      ORDER BY F."ID"
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_StorageReports>
+    <ID>select_REMIT_StorageReportDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DSR.*, DSH."Date",
+      CONVERT(BIT, CASE IsNull(DSH."OutputDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasOutput",
+      CONVERT(BIT, CASE IsNull(DSH."ReceiptDataName", '') WHEN '' THEN 0 ELSE 1 END) AS "hasReceipt"
+      FROM "REMIT_StorageReports" DSR
+      LEFT JOIN "REMIT_DataSourceHistory" DSH ON (DSR."ID_DataSourceHistory" = DSH."ID")
+      WHERE DSR."ID" = @prm_ID      
+    </SQL>
+  </REMIT_StorageReports>
+
+  <REMIT_StorageFacilityReports>
+    <ID>select_REMIT_StorageFacilityReports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_StorageFacilityReports" 
+      WHERE "ID_StorageReport" = @prm_ID_StorageReport
+      AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+    </SQL>
+  </REMIT_StorageFacilityReports>
+
+  <REMIT_StorageParticipantActivityReports>
+    <ID>select_REMIT_StorageParticipantActivityReports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_StorageParticipantActivityReports" 
+      WHERE "ID_StorageReport" = @prm_ID_StorageReport
+      AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+    </SQL>
+  </REMIT_StorageParticipantActivityReports>
+
+  <REMIT_StorageUnavailabilityReports>
+    <ID>select_REMIT_StorageUnavailabilityReports</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_StorageUnavailabilityReports" 
+      WHERE ("ID_StorageReport" = @prm_ID_StorageReport) 
+      AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+    </SQL>
+  </REMIT_StorageUnavailabilityReports>
+
+  <REMIT_ARIS>
+    <ID>select_REMIT_ARISActivity</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_ARISActivity"
+      ORDER BY "Date" DESC
+    </SQL>
+  </REMIT_ARIS>
+
+</UsersDBModule>

@@ -1,0 +1,1 @@
+tcpTrace.exe /listen 51368 /serverPort 49000 /serverName localhost

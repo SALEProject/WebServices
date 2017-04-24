@@ -1,0 +1,28 @@
+<JASPER>
+	<SERVER_PROTOCOL>http</SERVER_PROTOCOL>
+	<SERVER_IP>10.0.0.4</SERVER_IP>
+	<SERVER_PORT>8080</SERVER_PORT>	
+	<JASPER_SERVER>jasperserver</JASPER_SERVER>
+	<JASPER_USERNAME>jasperadmin</JASPER_USERNAME>
+	<JASPER_PASSWORD>jasperadmin</JASPER_PASSWORD>
+  <ReportServicePath>/rest/report</ReportServicePath>
+  <ReportsFolder>/Reports/Gemini</ReportsFolder>
+  <ResourcesServicePath>/rest/resources</ResourcesServicePath>
+	<!--<REPORTS_BASIC_PATH>/rest/report</REPORTS_BASIC_PATH>-->
+  <!--<RESOURCE_PATH>/rest/resources</RESOURCE_PATH>-->
+	<!--<SALE_PATH>/Reports/SALE</SALE_PATH>	-->
+  
+  <REPORTS>
+    <TRANSACTION>
+      <PARAM name="ID_Transaction" type="int"/>
+    </TRANSACTION>
+    <ANRE_REPORT>
+      <PARAM name="prm_StartDate" type="date"/>
+      <PARAM name="prm_EndDate" type="date"/>
+    </ANRE_REPORT>
+    <SITUATIE_FACTURARE>
+      <PARAM name="prm_StartDate" type="date"/>
+      <PARAM name="prm_EndDate" type="date"/>
+    </SITUATIE_FACTURARE>
+  </REPORTS>
+</JASPER>

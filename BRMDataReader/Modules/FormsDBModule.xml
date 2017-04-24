@@ -1,0 +1,36 @@
+﻿<FormsDBModule>
+
+  <Forms>
+    <ID>select_FormbyStep</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Forms" WHERE ("Step" = @prm_Step)
+      AND ("isActive" = 1) AND ("isDeleted" = 0)
+    </SQL>
+  </Forms>
+  
+  <FormFields>
+    <ID>select_Field</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT F."ID", F."ID_Form", F."ID_Parent", F."Order", F."Type", F."DataType",
+      F."Validation", F."isMandatory", F."Dependency", F."Field", 
+      IsNull(dbo.GetProcedureVarValues(F."Values"), F."Values") AS "Values",
+      F."Html", F."Style",
+      CASE WHEN IsNull(F."Field", '') = '' THEN '' 
+      ELSE IsNull(dbo.GetProcedureVariable(@prm_ID_Procedure, F."Field"), '') END AS "Data"
+      FROM "FormFields" F      
+      WHERE (F."ID_Form" = @prm_ID_Form) AND (F."ID" = @prm_ID)
+    </SQL>
+  </FormFields>
+
+  <FormFields>
+    <ID>select_Items</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "FormFields" 
+      WHERE ("ID_Form" = @prm_ID_Form) AND ("ID_Parent" = @prm_ID_Parent)
+    </SQL>
+  </FormFields>
+  
+</FormsDBModule>

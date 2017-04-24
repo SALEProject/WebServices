@@ -1,0 +1,7 @@
+<DBConnection>
+  <Server>.</Server>
+  <Database>@prm_Database</Database>
+  <User>db_uid</User>
+  <Password>db_pwd</Password>
+  <Pooling>true</Pooling>
+</DBConnection>

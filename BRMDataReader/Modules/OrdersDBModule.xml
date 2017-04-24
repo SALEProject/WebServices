@@ -1,0 +1,3335 @@
+﻿<OrdersDBModule>
+
+  <Users>
+    <ID>update_UserPassword</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Users"
+      SET "LoginPassword" = @prm_LoginPassword
+      WHERE ("ID" = @prm_ID_User)
+    </SQL>
+  </Users>
+
+  <Messages>
+    <ID>insert_Message</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Messages" ("ID_User", "Message", "ID_Bursary") VALUES (@prm_ID_User, @prm_Message, @prm_ID_Bursary)
+    </SQL>
+  </Messages>
+
+  <Notifications>
+    <ID>update_isRead</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Notifications" SET "isRead" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Notifications>
+
+  <Agencies>
+    <ID>select_AgenciesbyCode</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Agencies" 
+      WHERE ("ID_Bursary" = @prm_ID_Bursary) AND ("Code" = @prm_Code) AND ("ID" != @prm_ID)
+      AND ("isDeleted" = 0)
+    </SQL>
+  </Agencies>
+  
+  <Agencies>
+    <ID>insert_Agency</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Agencies" ("ID_Bursary", "Code", "Name", "ContractStartDate", "ContractEndDate", "ContractNumber", "Status") 
+      VALUES (@prm_ID_Bursary, @prm_Code, @prm_Name, @prm_ContractStartDate, @prm_ContractEndDate, @prm_ContractNumber, @prm_Status)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>delete_Agency</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Agencies"
+      SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID_Agency
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>update_Agency</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Agencies" SET
+      "ID_Bursary" = @prm_ID_Bursary,
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "ContractStartDate" = @prm_ContractStartDate,
+      "ContractEndDate" = @prm_ContractEndDate,
+      "ContractNumber" = @prm_ContractNumber,
+      "Status" = @prm_Status
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>insert_AgencyXRing</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      INSERT INTO "RingsXAgencies" ("ID_Ring", "ID_Agency", "isDeleted")
+      VALUES (@prm_ID_Ring, @prm_ID_Agency, @prm_isDeleted)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>update_AgencyXRing</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "RingsXAgencies" SET 
+      "isDeleted" = @prm_isDeleted
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_Agency" = @prm_ID_Agency)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>insert_ClientXAgency</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      INSERT INTO "AgenciesXClients" ("ID_Client", "ID_Agency", "isDeleted")
+      VALUES (@prm_ID_Client, @prm_ID_Agency, @prm_isDeleted)
+    </SQL>
+  </Agencies>
+
+  <Agencies>
+    <ID>update_ClientXAgency</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AgenciesXClients" SET
+      "isDeleted" = @prm_isDeleted
+      WHERE ("ID_Client" = @prm_ID_Client) AND ("ID_Agency" = @prm_ID_Agency)
+    </SQL>
+  </Agencies>
+
+  <Clients>
+    <ID>select_ClientsbyID_Agency</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Clients" WHERE "ID_Agency" = @prm_ID_Agency
+    </SQL>
+  </Clients>
+
+  <Clients>
+    <ID>insert_Client</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Clients" ("ID_Bursary", "ID_Agency", "Code", "Name", "isHouse")
+      VALUES (@prm_ID_Bursary, @prm_ID_Agency, @prm_Code, @prm_Name, @prm_isHouse)
+    </SQL>
+  </Clients>
+
+  <Clients>
+    <ID>update_Client</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Clients" SET
+      "ID_Bursary" = @prm_ID_Bursary,
+      "ID_Agency" = @prm_ID_Agency,
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "isHouse" = @prm_isHouse
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Clients>
+
+  <Clients>
+    <ID>delete_Client</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Clients"
+      SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID_Client
+    </SQL>
+  </Clients>
+
+  <Identities>
+    <ID>select_IdentitiesbyID_Client</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Identities" WHERE  ("ID_Client" = @prm_ID_Client)
+    </SQL>
+  </Identities>
+
+  <Identities>
+    <ID>select_IdentitiesbyID_ClientAndID_Agency</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Identities" WHERE ("ID_Agency" = @prm_ID_Agency) AND ("ID_Client" = @prm_ID_Client)
+    </SQL>
+  </Identities>
+
+  <Addresses>
+    <ID>insert_address</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Addresses"
+      ("StreetAddress", "City", "ID_County", "PostalCode") VALUES
+      (@prm_StreetAddress, @prm_City, @prm_ID_County, @prm_PostalCode)
+    </SQL>
+  </Addresses>
+
+  <Addresses>
+    <ID>update_Address</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Addresses" SET
+      "StreetAddress" = @prm_StreetAddress,
+      "City" = @prm_City,
+      "ID_County" = @prm_ID_County,
+      "PostalCode" = @prm_PostalCode
+      WHERE ("ID" = @prm_ID_Address)
+    </SQL>
+  </Addresses>
+
+  <Markets>
+    <ID>insert_Market</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Markets" ("ID_Bursary", "Name", "isDefault")
+      VALUES (@prm_ID_Bursary, @prm_Name, @prm_isDefault)
+    </SQL>
+  </Markets>
+
+  <Rings>
+    <ID>select_Latest</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 "ID" FROM "Rings" ORDER BY "ID" DESC
+    </SQL>
+  </Rings>
+  
+  <Rings>
+    <ID>insert_Ring</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Rings" ("ID_Market", "Code", "Name", "Description", "hasSchedule", "StartDate", "EndDate", "DaysOfWeek", "PreOpeningTime", "OpeningTime", "PreClosingTime", "ClosingTime", "MinQuantity", "MaxPriceVariation", "QuantityStepping", "PriceStepping", "isActive", "isDefault")
+      VALUES (@prm_ID_Market, @prm_Code, @prm_Name, @prm_Description, @prm_hasSchedule, @prm_StartDate, @prm_EndDate, @prm_DaysOfWeek, @prm_PreOpeningTime, @prm_OpeningTime, @prm_PreClosingTime, @prm_ClosingTime, @prm_MinQuantity, @prm_MaxPriceVariation, @prm_QuantityStepping, @prm_PriceStepping, @prm_isActive, @prm_isDefault)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>update_Ring</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Rings"
+      SET "ID_Market" = @prm_ID_Market,
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "Description" = @prm_Description,
+      "hasSchedule" = @prm_hasSchedule,
+      "StartDate" = @prm_StartDate,
+      "EndDate" = @prm_EndDate,
+      "DaysOfWeek" = @prm_DaysOfWeek,
+      "PreOpeningTime" = @prm_PreOpeningTime,
+      "OpeningTime" = @prm_OpeningTime,
+      "PreClosingTime" = @prm_PreClosingTime,
+      "ClosingTime" = @prm_ClosingTime,
+      "MinQuantity" = @prm_MinQuantity,
+      "MaxPriceVariation" = @prm_MaxPriceVariation,
+      "QuantityStepping" = @prm_QuantityStepping,
+      "PriceStepping" = @prm_PriceStepping,
+      "isDefault" = @prm_isDefault,
+      "isActive" = @prm_isActive
+      WHERE "ID" = @prm_ID_Ring
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Rings" SET "Name" = @prm_Name, "Description" = @prm_Description WHERE "ID" = @prm_ID
+    </SQL>
+  </Rings>
+  
+  <Rings>
+    <ID>update_RingParameters</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Rings" SET
+      "PreOpeningTime" = @prm_PreOpeningTime,
+      "OpeningTime" = @prm_OpeningTime,
+      "PreClosingTime" = @prm_PreClosingTime,
+      "ClosingTime" = @prm_ClosingTime,
+      "MinQuantity" = @prm_MinQuantity,
+      "MaxPriceVariation" = @prm_MaxPriceVariation,
+      "QuantityStepping" = @prm_QuantityStepping,
+      "PriceStepping" = @prm_PriceStepping,
+      "hasSchedule" = @prm_hasSchedule,
+      "DaysOfWeek" = @prm_DaysOfWeek
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Rings>
+  
+  <Rings>
+    <ID>delete_Ring</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Rings" SET
+      "isActive" = 0,
+      "isDeleted" = 1
+      WHERE "ID" = @prm_ID_Ring
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>insert_RingXClient</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "RingsXClients" ("ID_Ring", "ID_Client", "canBuy", "canSell")
+      VALUES (@prm_ID_Ring, @prm_ID_Client, @prm_canBuy, @prm_canSell)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>update_RingXClient</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "RingsXClients" SET       
+      "canBuy" = @prm_canBuy,
+      "canSell" = @prm_canSell      
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_Client" = @prm_ID_Client)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>set_RingXUser</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      IF (SELECT TOP 1 "ID" FROM "RingsXUsers" WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_User" = @prm_ID_User)) IS NOT NULL
+      UPDATE "RingsXUsers" SET "isDeleted" = 0 WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_User" = @prm_ID_User)
+      ELSE
+      INSERT INTO "RingsXUsers" ("ID_Ring", "ID_User") VALUES (@prm_ID_Ring, @prm_ID_User)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>reset_RingXUser</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "RingsXUsers" SET
+      "isDeleted" = 1
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_User" = @prm_ID_User)
+    </SQL>
+  </Rings>
+
+  <AssetsXClients>
+    <ID>select_AssetsXClientsbyID_Client</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID_Asset", "ID_Client", "Code", "Name",
+      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy",
+      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell"
+      FROM
+      (
+      SELECT C."Code", C."Name", A."ID" AS "ID_Asset", C."ID" AS "ID_Client",
+      ~O."Direction" AS "canBuy", O."Direction" AS "canSell"
+      FROM "Assets" A
+      RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") AND (I."ID_Agency" = 0)
+      WHERE (A."ID" = @prm_ID_Asset) AND (O."ID_Client" = @prm_ID_Client)
+
+      UNION ALL
+
+      SELECT C."Code", C."Name", AXC."ID_Asset", AXC."ID_Client",
+      AXC."canBuy", AXC."canSell"
+      FROM "Clients" C
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") AND (I."ID_Agency" = 0)
+      LEFT JOIN "AssetsXClients" AXC ON (C."ID" = AXC."ID_Client")
+      WHERE ((AXC."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND ((AXC."ID_Client" = @prm_ID_Client) OR (@prm_ID_Client = -1))
+      AND (AXC."isDeleted" = 0) AND ((AXC."canBuy" = 1) OR (AXC."canSell" = 1))
+      ) T
+      GROUP BY T."ID_Asset", T."ID_Client", T."Code", T."Name"
+    </SQL>
+  </AssetsXClients>
+
+  <Rings>
+    <ID>insert_AssetXClient</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "AssetsXClients" ("ID_Asset", "ID_Client", "canBuy", "canSell")
+      VALUES (@prm_ID_Asset, @prm_ID_Client, @prm_canBuy, @prm_canSell)
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>update_AssetXClient</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AssetsXClients" SET
+      "canBuy" = @prm_canBuy,
+      "canSell" = @prm_canSell
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_Client" = @prm_ID_Client)
+    </SQL>
+  </Rings>
+
+  <AssetsXClients>
+    <ID>reset_AssetsXClients</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      IF @prm_Direction = 0 UPDATE "AssetsXClients" SET "canBuy" = 0 WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_Client" != @prm_ID_Client)
+      ELSE UPDATE "AssetsXClients" SET "canSell" = 0 WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_Client" != @prm_ID_Client)
+    </SQL>
+  </AssetsXClients>
+
+  <RingParameters_RGN>
+    <ID>insert_RingParamters_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "RingParameters_RGN" ("ID_Ring", "StartDeliveryDateOffset", "EndDeliveryDateOffset")
+      VALUES (@prm_ID_Ring, @prm_StartDeliveryDateOffset, @prm_EndDeliveryDateOffset)
+    </SQL>
+  </RingParameters_RGN>
+
+  <RingParameters_RGN>
+    <ID>update_RingParameters_RGN</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "RingParameters_RGN" SET
+      "StartDeliveryDateOffset" = @prm_StartDeliveryDateOffset,
+      "EndDeliveryDateOffset" = @prm_EndDeliveryDateOffset
+      WHERE "ID_Ring" = @prm_ID_Ring
+    </SQL>
+  </RingParameters_RGN>
+
+  <RingSessions>
+    <ID>select_CurrentSession</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "RingSessions" RS
+      WHERE "ID_Ring" = @prm_ID_Ring
+      ORDER BY "Date" DESC
+    </SQL>
+  </RingSessions>
+
+  <AssetSessions>
+    <ID>select_CurrentSession</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 * FROM "AssetSessions"
+      WHERE ("ID_Asset" = @prm_ID_Asset)
+      ORDER BY "Date" DESC
+    </SQL>
+  </AssetSessions>
+
+  <Orders>
+    <ID>select_Orders</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT O.*,
+      CONVERT(BIT, CASE WHEN A."ID_InitialOrder" = O."ID" THEN 1 ELSE 0 END) AS "isInitial",
+      IsNUll((SELECT SUM(T."Quantity") FROM "Transactions" T WHERE (T."ID_BuyOrder" = O."ID") OR (T."ID_SellOrder" = O."ID")), 0) AS "TransactedQuantity"
+      FROM "Orders" O
+      LEFT JOIN "Assets" A ON (O."ID_Asset" = A."ID")
+      WHERE (O."ID" = @prm_ID) Or (@prm_ID = -1)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_NexOrderType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT
+      CONVERT(BIT, CASE A."ID_InitialOrder" WHEN 0 THEN 1 ELSE 0 END) AS "isDoubleTrouble",
+      CONVERT(BIT, CASE IsNull(O."ID_Client", 0) WHEN @prm_ID_Client THEN 1 ELSE 0 END) AS "isSameAsInitial"
+      FROM "Assets" A
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID") AND (O."ID_Client" = @prm_ID_Client)
+      WHERE (A."ID" = @prm_ID_Asset)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_MaxDateOnBroker</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT MAX(IsNull(OO."Date", O."Date")) AS "MaxDateOnBroker" FROM "Orders" O 
+      LEFT JOIN "Orders" OO ON (O."ID_Asset" = OO."ID_Asset") AND (O."ID_Broker" = OO."ID_Broker")
+      WHERE O."ID" = @prm_ID
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_LastOrder</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "Orders"
+      ORDER BY "ID" DESC
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>select_OrderDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "OrderDetails_RGN"
+      WHERE ("ID" = @prm_ID) Or (@prm_ID = -1)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>insert_Order</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Orders" ("ID_Ring", "ID_Asset", "ID_AssetSession", "ID_Broker", "ID_Client", "Direction", "Quantity", "Price", "isActive")
+      VALUES (@prm_ID_Ring, @prm_ID_Asset, @prm_ID_AssetSession, @prm_ID_Broker, @prm_ID_Client, @prm_Direction, @prm_Quantity, @prm_Price, @prm_isActive)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>insert_Order_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Orders" ("ID_Ring", "ID_RingSession", "ID_Asset", "ID_AssetSession", "ID_Agency", "ID_Broker", "ID_Client", "Direction", "Quantity", "Price", "isActive")
+      VALUES (@prm_ID_Ring, @prm_ID_RingSession, @prm_ID_Asset, @prm_ID_AssetSession, @prm_ID_Agency, @prm_ID_Broker, @prm_ID_Client, @prm_Direction, @prm_Quantity, @prm_Price, @prm_isActive)
+      
+      DECLARE @prm_ID_Order AS INT
+      SET @prm_ID_Order = (SELECT SCOPE_IDENTITY())
+      
+      INSERT "OrderDetails_RGN" ("ID_Order", "ID_GNType", "StartDeliveryDate", "EndDeliveryDate", "CombinationsAccepted")
+      VALUES (@prm_ID_Order, @prm_ID_GNType, @prm_StartDeliveryDate, @prm_EndDeliveryDate, @prm_CombinationsAccepted)    
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>insert_Order_DISPONIBIL</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Orders" ("ID_Ring", "ID_RingSession", "ID_Asset", "ID_AssetSession", "ID_Agency", "ID_Broker", "ID_Client", "Direction", "Quantity", "Price", "PartialFlag", "ExpirationDate", "isActive")
+      VALUES (@prm_ID_Ring, @prm_ID_RingSession, @prm_ID_Asset, @prm_ID_AssetSession, @prm_ID_Agency, @prm_ID_Broker, @prm_ID_Client, @prm_Direction, @prm_Quantity, @prm_Price, @prm_PartialFlag, @prm_ExpirationDate, @prm_isActive)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>update_Order</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET
+      "Date" = GetDate(),
+      --"ID_Ring" = @prm_ID_Ring, 
+      --"ID_Asset" = @prm_ID_Asset,
+      "ID_Agency" = @prm_ID_Agency,
+      "ID_Broker" = @prm_ID_Broker,
+      "ID_Client" = @prm_ID_Client,
+      "Direction" = @prm_Direction,
+      "Quantity" = @prm_Quantity,
+      "Price" = @prm_Price,
+      "PartialFlag" = @prm_PartialFlag,
+      "ExpirationDate" = @prm_ExpirationDate,
+      "isActive" = @prm_isActive
+      WHERE "ID" = @prm_ID      
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>suspend_Order</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET "isActive" = 0, "isSuspended" = 1 WHERE "ID" = @prm_ID_Order
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>reactivate_Order</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET "isActive" = 1, "isSuspended" = 0 WHERE "ID" = @prm_ID_Order
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>update_isTransacted</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET "isTransacted" = @prm_isTransacted
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>approve_InitialOrder</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET
+      "isApproved" = 1      
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>cancel_Order</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET 
+      "isCanceled" = 1,
+      "isActive" = 0
+      WHERE "ID" = @prm_ID
+      
+      DELETE FROM "OrderMatchDetails" WHERE "ID_OrderMatch" IN
+      (
+        SELECT "ID" FROM "OrderMatches" WHERE "ID_Order" = @prm_ID
+      )
+      
+      DELETE FROM "OrderMatches" WHERE "ID_Order" = @prm_ID
+    </SQL>
+  </Orders>
+  
+  <Orders>
+    <ID>insert_OrderDetails_RGN</ID>
+    <SQLType>2</SQLType>    
+    <SQL>
+      INSERT "OrderDetails_RGN" ("ID_Order", "StartDeliveryDate", "EndDeliveryDate", "CombinationsAccepted")
+      VALUES (@prm_ID_Order, @prm_StartDeliveryDate, @prm_EndDeliveryDate, @prm_CombinationsAccepted)
+    </SQL>
+  </Orders>
+
+  <Orders>
+    <ID>update_OrderDetails_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "OrderDetails_RGN" SET
+      "ID_GNType" = @prm_ID_GNType,
+      "StartDeliveryDate" = @prm_StartDeliveryDate, 
+      "EndDeliveryDate" = @prm_EndDeliveryDate,
+      "CombinationsAccepted" = @prm_CombinationsAccepted
+      WHERE "ID_Order" = @prm_ID_Order
+    </SQL>
+  </Orders>
+  
+  <Orders>
+    <ID>ExecuteOrderMatch</ID>
+    <SQLType>0</SQLType>
+    <SQL>
+      EXEC "ExecuteOrderMatch" @prm_ID_OrderMatch
+    </SQL>
+  </Orders>
+
+  <AgreedClients>
+    <ID>insert_AgreedClient</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      INSERT INTO "AgreedClients" ("ID_Asset", "ID_Client", "ID_AgreedClient", "isAgreed", "ID_DisagreeReason", "Reason", "isApproved")
+      VALUES (@prm_ID_Asset, @prm_ID_Client, @prm_ID_AgreedClient, @prm_isAgreed, @prm_ID_DisagreeReason, @prm_Reason, @prm_isApproved)
+    </SQL>
+  </AgreedClients>
+
+  <AgreedClients>
+    <ID>update_AgreedClient</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AgreedClients" SET "isAgreed" = @prm_isAgreed, "ID_DisagreeReason" = @prm_ID_DisagreeReason, "Reason" = @prm_Reason, "isApproved" = @prm_isApproved
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_Client" = @prm_ID_Client) AND ("ID_AgreedClient" = @prm_ID_AgreedClient)
+    </SQL>
+  </AgreedClients>
+
+  <AgreedClients>
+    <ID>approveRequest</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AgreedClients" SET "isApproved" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </AgreedClients>
+
+  <DisagreeReasons>
+    <ID>insert_DisagreeReason</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "DisagreeReasons" ("Reason") VALUES (@prm_Reason)
+    </SQL>
+  </DisagreeReasons>
+
+  <DisagreeReasons>
+    <ID>delete_DisagreeReason</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "DisagreeReasons" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </DisagreeReasons>
+
+  <DisagreeReasons>
+    <ID>update_DisagreeReason</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "DisagreeReasons" SET 
+      "Reason" = @prm_Reason
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </DisagreeReasons>
+
+  <Events>
+    <ID>insert_Event</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Events" ("Priority", "Resource", "EventType")
+      VALUES (@prm_Priority, @prm_Resource, @prm_EventType)
+    </SQL>
+  </Events>
+
+  <RingParameters_RGN>
+  <ID>select_RingParameters_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "Rings" R
+      LEFT JOIN "RingParameters_RGN" RP ON (R."ID" = RP."ID_Ring")
+      WHERE R."Code" = 'RGN'
+    </SQL>
+  </RingParameters_RGN>
+
+  <EntryPoints_RGN>
+    <ID>select_EntryPoint_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "EntryPoints_RGN" WHERE ("ID" = @prm_ID) Or (@prm_ID = -1)
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>insert_OrderEntryPoint_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "OrdersXEntryPoints_RGN" ("ID_Order", "ID_EntryPoint") VALUES (@prm_ID_Order, @prm_ID_EntryPoint)
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>delete_OrderEntryPoint_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+     UPDATE "OrdersXEntryPoints_RGN" 
+     SET "isDeleted" = 1
+     WHERE ("ID_Order" = @prm_ID_Order)
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>insert_EntryPoint_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "EntryPoints_RGN" ("ID_County", "PhysicalPointCode", "PhysicalPointName", "VirtualPointCode", "VirtualPointName", "VirtualEntryPointCode", "VirtualEntryPointName", "AdjacentNetworkOperator", "AdjacentNetworkOperatorType", "Locality", "LowerSirutaCode", "UpperSirutaCode", "TerritorialBranch", "Sector", "TechnologicalMinimumPressure", "TechnologicalMinimumUM", "TechnologicalMaximumPressure", "TechnologicalMaximumUM", "AnnualAverageGrossCalorificValue", "AnnualUM", "TechnologicalCapacity", "TechnologicalCapacityUM")
+      VALUES (@prm_ID_County,  @prm_PhysicalPointCode,  @prm_PhysicalPointName,  @prm_VirtualPointCode,  @prm_VirtualPointName,  @prm_VirtualEntryPointCode,  @prm_VirtualEntryPointName,	@prm_AdjacentNetworkOperator,  @prm_AdjacentNetworkOperatorType,   @prm_Locality, 	@prm_LowerSirutaCode, @prm_UpperSirutaCode,	@prm_TerritorialBranch,    @prm_Sector,	@prm_TechnologicalMinimumPressure,	@prm_TechnologicalMinimumUM, @prm_TechnologicalMaximumPressure, @prm_TechnologicalMaximumUM, @prm_AnnualAverageGrossCalorificValue,	@prm_AnnualUM, 	@prm_TechnologicalCapacity,	@prm_TechnologicalCapacityUM)
+
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>update_EntryPoint_RGN</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "EntryPoints_RGN" SET
+      "ID_County" = @prm_ID_County,
+      "PhysicalPointCode" = @prm_PhysicalPointCode,
+      "PhysicalPointName" = @prm_PhysicalPointName,
+      "VirtualPointCode" = @prm_VirtualPointCode,
+      "VirtualPointName" = @prm_VirtualPointName,
+      "VirtualEntryPointCode" = @prm_VirtualEntryPointCode,
+      "VirtualEntryPointName" = @prm_VirtualEntryPointName,
+      "AdjacentNetworkOperator" = @prm_AdjacentNetworkOperator,
+      "AdjacentNetworkOperatorType" = @prm_AdjacentNetworkOperatorType,
+      "Locality" = @prm_Locality,
+      "LowerSirutaCode" = @prm_LowerSirutaCode,
+      "UpperSirutaCode" = @prm_UpperSirutaCode,
+      "TerritorialBranch" = @prm_TerritorialBranch,
+      "Sector" = @prm_Sector,
+      "TechnologicalMinimumPressure" = @prm_TechnologicalMinimumPressure,
+      "TechnologicalMinimumUM" = @prm_TechnologicalMinimumUM,
+      "TechnologicalMaximumPressure" = @prm_TechnologicalMaximumPressure,
+      "TechnologicalMaximumUM" = @prm_TechnologicalMaximumUM,
+      "AnnualAverageGrossCalorificValue" = @prm_AnnualAverageGrossCalorificValue,
+      "AnnualUM" = @prm_AnnualUM,
+      "TechnologicalCapacity" = @prm_TechnologicalCapacity,
+      "TechnologicalCapacityUM" = @prm_TechnologicalCapacityUM
+      WHERE ("ID" = @prm_ID_EntryPoint)
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>update_OrderEntryPoint_RGN</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "OrdersXEntryPoints_RGN"
+      SET "isDeleted" = @prm_IsDeleted
+      WHERE (("ID_EntryPoint" = @prm_ID_EntryPoint) OR (@prm_ID_EntryPoint = -1)) AND (("ID_Order" = @prm_ID_Order) OR (@prm_ID_Order = -1))
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPoints_RGN>
+    <ID>delete_EntryPoint_RGN</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "EntryPoints_RGN"
+      SET "isDeleted" = 1
+      WHERE (("ID" = @prm_ID_EntryPoint))
+    </SQL>
+  </EntryPoints_RGN>
+
+  <UsersXEntryPoints_RGN>
+    <ID>setUserXEntryPoint</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      IF (SELECT TOP 1 "ID" FROM "UsersXEntryPoints_RGN" WHERE ("ID_User" = @prm_ID_User) AND ("ID_EntryPoint" = @prm_ID_EntryPoint)) IS NULL
+      BEGIN
+      INSERT INTO "UsersXEntryPoints_RGN" ("ID_User", "ID_EntryPoint", "isChecked")
+      VALUES (@prm_ID_User, @prm_ID_EntryPoint, @prm_isChecked)
+      END ELSE BEGIN
+      UPDATE "UsersXEntryPoints_RGN" SET "isChecked" = @prm_isChecked
+      WHERE ("ID_User" = @prm_ID_User) AND ("ID_EntryPoint" = @prm_ID_EntryPoint)
+      END      
+    </SQL>
+  </UsersXEntryPoints_RGN>
+
+  <Users>
+    <ID>delete_User</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Users"
+      SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID_User
+    </SQL>
+  </Users>
+  
+  <!-- alex -->
+
+  <AssetTypes>
+    <ID>select_AssetTypes</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT AT.*,
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1"
+      FROM "AssetTypes" AT
+      LEFT JOIN "TradeParameters" TP ON (AT."ID" = TP."ID_AssetType")
+      WHERE ((AT."ID" = @prm_ID) OR (@prm_ID = -1)) AND ("isDeleted" = 0) AND (("ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      ORDER BY AT."Name"
+    </SQL>
+  </AssetTypes>
+
+  <AssetTypes>
+    <ID>insert_AssetType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      INSERT INTO "AssetTypes" ("ID_Ring", "Code", "Name", "Description", "ID_Currency", "ID_MeasuringUnit", "MeasuringUnit")
+      VALUES (@prm_ID_Ring, @prm_AssetTypeCode, @prm_AssetTypeName, @prm_Description, @prm_ID_Currency, @prm_ID_MeasuringUnit, @prm_AssetTypeUM)
+    </SQL>
+  </AssetTypes>
+
+  <AssetTypes>
+    <ID>update_AssetType</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "AssetTypes" SET
+      "ID_Ring" = @prm_ID_Ring,
+      "Code" = @prm_AssetTypeCode,
+      "Name" = @prm_AssetTypeName,
+      "Description" = @prm_Description,
+      "ID_Currency" = @prm_ID_Currency,
+      "ID_MeasuringUnit" = @prm_ID_MeasuringUnit,
+      "MeasuringUnit" = @prm_AssetTypeUM
+      WHERE (("ID" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+    </SQL>
+  </AssetTypes>
+
+  <AssetTypes>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AssetTypes" SET "Name" = @prm_Name, "Description" = @prm_Description
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </AssetTypes>
+
+  <AssetTypes>
+    <ID>delete_AssetType</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "AssetTypes"
+      SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID_AssetType
+    </SQL>
+  </AssetTypes>
+
+  <Assets>
+    <ID>select_Assets</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Assets" 
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_AssetsbyID_AssetType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Assets"
+      WHERE ("ID_AssetType" = @prm_ID_AssetType) AND ("isDeleted" = 0) AND ("Visibility" IN ('initiated', 'public'))
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_AssetsbyCode</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Assets" WHERE ("Code" = @prm_Code) AND ("ID" != @prm_ID)
+    </SQL>
+  </Assets>
+  
+  <Assets>
+    <ID>insert_Asset</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Assets" ("ID_Market", "ID_Ring", "ID_AssetType", "ID_OwnerAgency", "ID_Terminal", "Code", "Name", "Description", "ID_Currency", "ID_PaymentCurrency", "ID_MeasuringUnit", "MeasuringUnit", "isSpotContract", "SpotQuotation", "Visibility", "AuctionType", "AvailabilityStartDate", "AvailabilityEndDate", "isActive", "isDefault")
+      VALUES (IsNull((SELECT "ID_Market" FROM "Rings" WHERE "ID" = @prm_ID_Ring), 0), @prm_ID_Ring, @prm_ID_AssetType, @prm_ID_OwnerAgency, @prm_ID_Terminal, @prm_Code, @prm_Name, @prm_Description, @prm_ID_Currency, @prm_ID_PaymentCurrency, @prm_ID_MeasuringUnit, @prm_MeasuringUnit, @prm_isSpotContract, @prm_SpotQuotation, @prm_Visibility, @prm_AuctionType, @prm_AvailabilityStartDate, @prm_AvailabilityEndDate, @prm_isActive, @prm_isDefault)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>update_Asset</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      DECLARE @ring_changed AS BIT
+      IF (SELECT "ID_Ring" FROM "Assets" WHERE "ID" = @prm_ID_Asset) != @prm_ID_Ring SET @ring_changed = 1
+      ELSE SET @ring_changed = 0
+      
+      UPDATE "Assets" SET 
+      "ID_Market" = @prm_ID_Market,
+      "ID_Ring" = @prm_ID_Ring,
+      "ID_AssetType" = @prm_ID_AssetType,
+      "ID_Terminal" = @prm_ID_Terminal,
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "Description" = @prm_Description,
+      "ID_Currency" = @prm_ID_Currency,
+      "ID_PaymentCurrency" = @prm_ID_PaymentCurrency,
+      "ID_MeasuringUnit" = @prm_ID_MeasuringUnit,
+      "MeasuringUnit" = @prm_MeasuringUnit,
+      "isSpotContract" = @prm_isSpotContract,
+      "SpotQuotation" = @prm_SpotQuotation,
+      "Visibility" = @prm_Visibility,
+      "AuctionType" = @prm_AuctionType,
+      "AvailabilityStartDate" = @prm_AvailabilityStartDate,
+      "AvailabilityEndDate" = @prm_AvailabilityEndDate,
+      "isActive" = @prm_isActive,
+      "isDefault" = @prm_isDefault
+      WHERE ( "ID" = @prm_ID_Asset )
+      
+      IF @ring_changed = 1
+      BEGIN
+        DECLARE @prm_ID_AssetSession AS INT
+        SELECT @prm_ID_AssetSession = "ID" FROM "AssetSessions" WHERE ("ID_Asset" = @prm_ID_Asset) AND (CONVERT(VARCHAR, "Date", 102) = CONVERT(VARCHAR, GetDate(), 102))        
+        IF @prm_ID_AssetSession IS NOT NULL UPDATE "AssetSessions" SET "ID_Ring" = @prm_ID_Ring WHERE "ID" = @prm_ID_AssetSession
+        
+        UPDATE "Orders" SET "ID_Ring" = @prm_ID_Ring WHERE ("ID_Asset" = @prm_ID_Asset) AND ("isActive" = 1)
+      END
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>set_InitialOrder</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Assets" SET "ID_InitialOrder" = @prm_ID_InitialOrder
+      WHERE "ID" = @prm_ID_Asset
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Assets" SET "Name" = @prm_Name, "Description" = @prm_Description 
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>update_Asset4Event</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Assets" SET "Code" = "Code" WHERE "ID" = @prm_ID
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>delete_Asset</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Assets" SET
+      "isDeleted" = 1,
+      "isActive" = 0
+      WHERE "ID" = @prm_ID_Asset
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>delete_AssetByInitialOrderID</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Assets" SET
+      "isDeleted" = 1,
+      "isActive" = 0
+      WHERE ("ID_InitialOrder" = @prm_ID)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>update_Asset_ID_InitialOrder</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Assets"
+      SET "ID_InitialOrder" = @prm_ID_InitialOrder
+      WHERE "ID" = @prm_ID_Asset
+    </SQL>
+  </Assets>
+
+  <AssetSchedules>
+    <ID>select_AssetSchedules</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT S.*, A."ID_InitialOrder" FROM "AssetSchedules" S
+      LEFT JOIN "Assets" A ON (S."ID_Asset" = A."ID")
+      WHERE (S."ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </AssetSchedules>
+  
+  <Assets>
+    <ID>insert_AssetSchedule</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "AssetSchedules" ("ID_Asset", "StartDate", "EndDate", "DaysOfWeek", "PreOpeningTime", "OpeningTime", "PreClosingTime", "ClosingTime", "isElectronicSession", "launchAutomatically", "MinQuantity", "MaxPriceVariation", "QuantityStepping", "PriceStepping", "MinPrice", "MaxPrice", "isActive", "isDefault")
+      VALUES (@prm_ID_Asset,  @prm_StartDate, @prm_EndDate, @prm_DaysOfWeek, @prm_PreOpeningTime, @prm_OpeningTime, @prm_PreClosingTime, @prm_ClosingTime, @prm_isElectronicSession, @prm_launchAutomatically, @prm_MinQuantity, @prm_MaxPriceVariation, @prm_QuantityStepping, @prm_PriceStepping, @prm_MinPrice, @prm_MaxPrice, 1, @prm_IsDefault)
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>update_AssetSchedule</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "AssetSchedules"  SET
+      "ID_Asset" = @prm_ID_Asset,
+      "StartDate" = @prm_StartDate,
+      "EndDate" = @prm_EndDate,
+      "DaysOfWeek" = @prm_DaysOfWeek,
+      "PreOpeningTime" = @prm_PreOpeningTime,
+      "OpeningTime" = @prm_OpeningTime,
+      "PreClosingTime" = @prm_PreClosingTime,
+      "ClosingTime" = @prm_ClosingTime,
+      "isElectronicSession" = @prm_isElectronicSession,
+      "launchAutomatically" = @prm_launchAutomatically,
+      "MinQuantity" = @prm_MinQuantity,
+      "MaxPriceVariation" = @prm_MaxPriceVariation,
+      "QuantityStepping" = @prm_QuantityStepping,
+      "PriceStepping" = @prm_PriceStepping,
+      "MinPrice" = @prm_MinPrice,
+      "MaxPrice" = @prm_MaxPrice,
+      "isActive" = @prm_isActive,
+      "isDefault" = @prm_isDefault
+      WHERE "ID" = @prm_ID_AssetSchedule
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>delete_AssetSchedule</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "AssetSchedules" SET
+      "isActive" = 0,
+      "isDeleted" = 1
+      WHERE "ID" = @prm_ID_AssetSchedule
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>approve_AssetByInitialOrderID</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Assets" SET
+      "isActive" = 1
+      WHERE "ID_InitialOrder" = @prm_ID
+    </SQL>
+  </Assets>
+
+  <Assets>
+    <ID>select_LastAsset</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "Assets"
+      ORDER BY "ID" DESC
+    </SQL>
+  </Assets>
+
+  <AssetDetails>
+    <ID>select_AssetDetails</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "AssetDetails" WHERE (("ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+    </SQL>
+  </AssetDetails>
+
+  <AssetDetails>
+    <ID>insert_AssetDetails</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "AssetDetails" ("ID_Asset", "Instructions_RO", "Instructions_EN", "DeliveryTerm", "DeliveryConditions", "PackingMethod", "PaymentMethod", "ContractTerm", "WarrantyMethod")
+      VALUES (@prm_ID_Asset, @prm_Instructions_RO, @prm_Instructions_EN, @prm_DeliveryTerm, @prm_DeliveryConditions, @prm_PackingMethod, @prm_PaymentMethod, @prm_ContractTerm, @prm_WarrantyMethod)
+    </SQL>
+  </AssetDetails>
+
+  <AssetDetails>
+    <ID>update_AssetDetails</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "AssetDetails" SET
+      "Instructions_RO" = @prm_Instructions_RO,
+      "Instructions_EN" = @prm_Instructions_EN,
+      "DeliveryTerm" = @prm_DeliveryTerm,
+      "DeliveryConditions" = @prm_DeliveryConditions,
+      "PackingMethod" = @prm_PackingMethod,
+      "PaymentMethod" = @prm_PaymentMethod,
+      "ContractTerm" = @prm_ContractTerm,
+      "WarrantyMethod" = @prm_WarrantyMethod
+      WHERE ( "ID_Asset" = @prm_ID_Asset )
+    </SQL>
+  </AssetDetails>
+  
+  <AssetSessions>
+    <ID>update_AssetSession4Event</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "AssetSessions" 
+      SET "ID_Asset" = "ID_Asset" 
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND (CONVERT(VARCHAR, "Date", 102) = CONVERT(VARCHAR, GetDate(), 102))
+    </SQL>
+  </AssetSessions>
+
+  <GNTypes>
+    <ID>select_GNType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * 
+      FROM "GNTypes"
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>    
+  </GNTypes>
+
+  <EntryPointsXGNTypes_RGN>
+    <ID>select_EntryPointGNType_RGN</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "EntryPointsXGNTypes_RGN" WHERE (("ID_EntryPoint" = @prm_ID_EntryPoint) OR (@prm_ID_EntryPoint = -1)) AND (("ID_GNType" = @prm_ID_GNType) OR (@prm_ID_GNType = -1)) AND (("IsDeleted" = @prm_IsDeleted) OR (@prm_IsDeleted = -1))
+    </SQL>
+  </EntryPointsXGNTypes_RGN>
+
+  <EntryPoints_RGN>
+    <ID>select_LastEntryPoint</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 * 
+      FROM "EntryPoints_RGN" 
+      WHERE ("ID" = @prm_ID) Or (@prm_ID = -1)
+      ORDER BY "ID" DESC
+    </SQL>
+  </EntryPoints_RGN>
+
+  <EntryPointsXGNTypes_RGN>
+    <ID>insert_EntryPointGNType_RGN</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "EntryPointsXGNTypes_RGN"
+      ("ID_EntryPoint", "ID_GNType", "IsDeleted") VALUES
+      (@prm_ID_EntryPoint, @prm_ID_GNType, 0)
+    </SQL>
+  </EntryPointsXGNTypes_RGN>
+
+  <EntryPointsXGNTypes_RGN>
+    <ID>delete_EntryPointGNType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "EntryPointsXGNTypes_RGN"
+      SET "IsDeleted" = 1
+      WHERE ("ID_EntryPoint" = @prm_ID_EntryPoint) AND (("ID_GNType" = @prm_ID_GNType) OR (@prm_ID_GNType = -1))
+    </SQL>
+  </EntryPointsXGNTypes_RGN>
+
+  <EntryPointsXGNTypes_RGN>
+    <ID>undelete_EntryPointGNType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "EntryPointsXGNTypes_RGN"
+      SET "IsDeleted" = 0
+      WHERE ("ID_EntryPoint" = @prm_ID_EntryPoint) AND (("ID_GNType" = @prm_ID_GNType) OR (@prm_ID_GNType = -1))
+    </SQL>
+  </EntryPointsXGNTypes_RGN>
+
+  <Currencies>
+    <ID>insert_Currency</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Currencies" ("Code", "Name")
+      VALUES (@prm_Code, @prm_Name)
+    </SQL>
+  </Currencies>
+
+  <Currencies>
+    <ID>delete_Currency</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Currencies" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Currencies>
+
+  <Currencies>
+    <ID>update_Currency</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Currencies" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Currencies>
+
+  <Currencies>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Currencies" SET "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Currencies>
+  
+  <MeasuringUnits>
+    <ID>insert_MeasuringUnit</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "MeasuringUnits" ("Code", "Name")
+      VALUES (@prm_Code, @prm_Name)
+    </SQL>
+  </MeasuringUnits>
+
+  <MeasuringUnits>
+    <ID>delete_MeasuringUnit</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "MeasuringUnits" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </MeasuringUnits>
+
+  <MeasuringUnits>
+    <ID>update_MeasuringUnit</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "MeasuringUnits" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </MeasuringUnits>
+
+  <MeasuringUnits>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "MeasuringUnits" SET "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </MeasuringUnits>
+
+  <CPV>
+    <ID>insert_CPV</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "CPV" ("Code", "Name_RO", "Name_EN")
+      VALUES (@prm_Code, @prm_Name_RO, @prm_Name_EN)
+    </SQL>
+  </CPV>
+
+  <CPV>
+    <ID>delete_CPV</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "CPV" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </CPV>
+
+  <CPV>
+    <ID>update_CPV</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "CPV" SET
+      "Code" = @prm_Code,
+      "Name_RO" = @prm_Name_RO,
+      "Name_EN" = @prm_Name_EN
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </CPV>
+
+    <CAEN>
+      <ID>insert_CAEN</ID>
+      <SQLType>2</SQLType>
+      <SQL>
+        INSERT INTO "CAEN" ("Code", "Name_RO", "Name_EN", "ParentCode")
+        VALUES (@prm_Code, @prm_Name_RO, @prm_Name_EN, @prm_ParentCode)
+      </SQL>
+    </CAEN>
+
+    <CAEN>
+      <ID>delete_CAEN</ID>
+      <SQLType>3</SQLType>
+      <SQL>
+        UPDATE "CAEN" SET "isDeleted" = 1
+        WHERE "ID" = @prm_ID
+      </SQL>
+    </CAEN>
+
+    <CAEN>
+      <ID>update_CAEN</ID>
+      <SQLType>4</SQLType>
+      <SQL>
+        UPDATE "CPV" SET
+        "Code" = @prm_Code,
+        "Name_RO" = @prm_Name_RO,
+        "Name_EN" = @prm_Name_EN,
+        "ParentCode" = @prm_ParentCode
+        WHERE "ID" = @prm_ID
+      </SQL>
+    </CAEN>
+
+  <Terminals>
+    <ID>select_TerminalByID_Terminal</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "Terminals" T
+      LEFT JOIN "Addresses" A ON (T."ID_Address" = A."ID")
+      WHERE ((T."ID" = @prm_ID_Terminal) OR (@prm_ID_Terminal = -1)) AND ("isDeleted" = 0)
+    </SQL>
+</Terminals>
+  
+  <Terminals>
+    <ID>insert_Terminal</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Terminals" ("Code", "Name", "Administrator", "Chairman", "CEO", "isActive", "Email", "Fax", "Phone", "Website", "ID_Address")
+      VALUES (@prm_Code, @prm_Name, @prm_Administrator, @prm_Chairman, @prm_CEO, @prm_isActive, @prm_Email, @prm_Fax, @prm_Phone, @prm_Website, @prm_ID_Address)
+    </SQL>
+  </Terminals>
+
+  <Terminals>
+    <ID>delete_Terminal</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Terminals" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Terminals>
+
+  <Terminals>
+    <ID>update_Terminal</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Terminals" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "Administrator" = @prm_Administrator,
+      "Chairman" = @prm_Chairman,
+      "CEO" = @prm_CEO,
+      "isActive" = @prm_isActive,
+      "Email" = @prm_Email,
+      "Fax" = @prm_Fax,
+      "Phone" = @prm_Phone,
+      "Website" = @prm_Website
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Terminals>
+
+  <Translations>
+    <ID>select_Translations</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT *
+      FROM "Translations"
+      WHERE (("ID" = @prm_ID_Translation) OR (@prm_ID_Translation = -1)) AND (("Label" = @prm_Label) OR (@prm_Label = '')) AND ("isDeleted" = 0)
+    </SQL>
+  </Translations>
+
+  <Translations>
+    <ID>setTranslation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      DECLARE @prm_ID AS INT
+      SELECT @prm_ID = "ID" FROM "Translations" WHERE "Label" = @prm_Label
+      
+      IF @prm_ID IS NULL
+      BEGIN
+        INSERT INTO "Translations" ("Label", "Value_EN", "Value_RO")
+        VALUES (@prm_Label, @prm_Value_EN, @prm_Value_RO)
+      END ELSE BEGIN
+        UPDATE "Translations" SET 
+        "Value_EN" = @prm_Value_EN,
+        "Value_RO" = @prm_Value_RO,
+        "isDeleted" = 0
+        WHERE "ID" = @prm_ID
+      END
+    </SQL>
+  </Translations>
+  
+  <Translations>
+    <ID>insert_Translation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Translations" ("Label", "Value_RO", "Value_EN")
+      VALUES (@prm_Label, @prm_Value_RO, @prm_Value_EN)
+    </SQL>
+  </Translations>
+
+  <Translations>
+    <ID>delete_Translation</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Translations" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Translations>
+
+  <Translations>
+    <ID>update_Translation</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Translations" SET
+      "Label" = @prm_Label,
+      "Value_RO" = @prm_Value_RO,
+      "Value_EN" = @prm_Value_EN
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Translations>
+
+  <TradeParameters>
+    <ID>select_TradeParametersbyIDs</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "TradeParameters" 
+      WHERE ("ID_AssetType" = @prm_ID_AssetType)
+      AND ("ID_Asset" = @prm_ID_Asset) 
+      AND ("ID_Order" = @prm_ID_Order)
+      AND ("ID_AssetSchedule" = @prm_ID_AssetSchedule)
+    </SQL>
+  </TradeParameters>
+
+  <TradeParameters>
+    <ID>select_ConsolidatedTradeParameters</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      DECLARE @prm_ID_InitialOrder AS INT
+      SELECT @prm_ID_InitialOrder = A."ID_InitialOrder" FROM "AssetSessions" SS
+      LEFT JOIN "Assets" A ON (SS."ID_Asset" = A."ID")
+      WHERE SS."ID" = @prm_ID_AssetSession
+
+      SELECT
+      CONVERT(BIT, IsNull(TPA."PartialFlagChangeAllowed", 0)) AS "PartialFlagChangeAllowed",
+      CONVERT(BIT, IsNull(TPA."InitialPriceMandatory", 0)) AS "InitialPriceMandatory",
+      CONVERT(BIT, IsNull(TPA."InitialPriceMaintenance", 0)) AS "InitialPriceMaintenance",
+      CONVERT(BIT, IsNull(TPA."DiminishedQuantityAllowed", 0)) AS "DiminishedQuantityAllowed",
+      CONVERT(BIT, IsNull(TPA."DiminishedPriceAllowed", 0)) AS "DiminishedPriceAllowed",
+      CONVERT(BIT, IsNull(TPA."DifferentialPriceAllowed", 0)) AS "DifferentialPriceAllowed",
+      IsNull(TPA."DifferentialPriceText", '') AS "DifferentialPriceText",
+      CONVERT(BIT, IsNull(TPA."OppositeDirectionAllowed", 0)) AS "OppositeDirectionAllowed",
+      CONVERT(INT, IsNull(TPS."DeltaT", 0)) AS "DeltaT",
+      CONVERT(INT, IsNull(TPS."DeltaT1", 0)) AS "DeltaT1",
+      CONVERT(FLOAT, IsNull(TPA."SellWarrantyPercent", 0)) AS "SellWarrantyPercent",
+      CONVERT(FLOAT, IsNull(TPA."SellWarrantyMU", 0)) AS "SellWarrantyMU",
+      CONVERT(FLOAT, IsNull(TPA."SellWarrantyFixed", 0)) AS "SellWarrantyFixed",
+      CONVERT(FLOAT, IsNull(TPA."BuyWarrantyPercent", 0)) AS "BuyWarrantyPercent",
+      CONVERT(FLOAT, IsNull(TPA."BuyWarrantyMU", 0)) AS "BuyWarrantyMU",
+      CONVERT(FLOAT, IsNull(TPA."BuyWarrantyFixed", 0)) AS "BuyWarrantyFixed",
+      SS."QuantityStepping", SS."MinQuantity", SS."PriceStepping", SS."MaxPriceVariation", SS."MinPrice", SS."MaxPrice",
+      CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME) + CAST(SS."PreOpeningTime" AS DATETIME) AS "PreOpeningTime",
+      CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME) + CAST(SS."OpeningTime" AS DATETIME) AS "OpeningTime",
+      A."SpotQuotation", S."TotalValue", S."TotalVolume",
+      CASE S."TotalVolume" WHEN 0 THEN 0 ELSE S."TotalValue" / S."TotalVolume" END AS "Quotation"
+      FROM "AssetSessions" S
+      LEFT JOIN "Assets" A ON (S."ID_Asset" = A."ID") LEFT JOIN "TradeParameters" TPA ON (A."ID" = TPA."ID_Asset")
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID") LEFT JOIN "TradeParameters" TPT ON (AT."ID" = TPT."ID_AssetType")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID") LEFT JOIN "TradeParameters" TPO ON (O."ID" = TPO."ID_Order")
+      LEFT JOIN "AssetSchedules" SS ON (S."ID_AssetSchedule" = SS."ID") LEFT JOIN "TradeParameters" TPS ON (SS."ID" = TPS."ID_AssetSchedule")
+      WHERE S."ID" = @prm_ID_AssetSession
+    </SQL>
+    <!--<SQL>
+      DECLARE @prm_ID_InitialOrder AS INT
+      SELECT @prm_ID_InitialOrder = A."ID_InitialOrder" FROM "AssetSessions" SS
+      LEFT JOIN "Assets" A ON (SS."ID_Asset" = A."ID")
+      WHERE SS."ID" = @prm_ID_AssetSession
+
+      SELECT
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."PartialFlagChangeAllowed", 0)) ELSE CONVERT(BIT, IsNull(TPO."PartialFlagChangeAllowed", 0)) END AS "PartialFlagChangeAllowed",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."InitialPriceMandatory", 0)) ELSE CONVERT(BIT, IsNull(TPO."InitialPriceMandatory", 0)) END AS "InitialPriceMandatory",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."InitialPriceMaintenance", 0)) ELSE CONVERT(BIT, IsNull(TPO."InitialPriceMaintenance", 0)) END AS "InitialPriceMaintenance",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."DiminishedQuantityAllowed", 0)) ELSE CONVERT(BIT, IsNull(TPO."DiminishedQuantityAllowed", 0)) END AS "DiminishedQuantityAllowed",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."DiminishedPriceAllowed", 0)) ELSE CONVERT(BIT, IsNull(TPO."DiminishedPriceAllowed", 0)) END AS "DiminishedPriceAllowed",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."DifferentialPriceAllowed", 0)) ELSE CONVERT(BIT, IsNull(TPO."DifferentialPriceAllowed", 0)) END AS "DifferentialPriceAllowed",
+      CASE @prm_ID_InitialOrder WHEN 0 THEN CONVERT(BIT, IsNull(TPS."OppositeDirectionAllowed", 0)) ELSE CONVERT(BIT, IsNull(TPO."OppositeDirectionAllowed", 0)) END AS "OppositeDirectionAllowed",
+      CONVERT(INT, IsNull(TPS."DeltaT", 0)) AS "DeltaT",
+      CONVERT(INT, IsNull(TPS."DeltaT1", 0)) AS "DeltaT1",
+      SS."QuantityStepping", SS."MinQuantity", SS."PriceStepping", SS."MaxPriceVariation", SS."MinPrice", SS."MaxPrice",
+      CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME) + CAST(SS."PreOpeningTime" AS DATETIME) AS "PreOpeningTime",
+      CAST(CONVERT(VARCHAR, GetDate(), 102) AS DATETIME) + CAST(SS."OpeningTime" AS DATETIME) AS "OpeningTime"
+      FROM "AssetSessions" S
+      LEFT JOIN "Assets" A ON (S."ID_Asset" = A."ID") LEFT JOIN "TradeParameters" TPA ON (A."ID" = TPA."ID_Asset")
+      LEFT JOIN "AssetTypes" AT ON (A."ID_AssetType" = AT."ID") LEFT JOIN "TradeParameters" TPT ON (AT."ID" = TPT."ID_AssetType")
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID") LEFT JOIN "TradeParameters" TPO ON (O."ID" = TPO."ID_Order")
+      LEFT JOIN "AssetSchedules" SS ON (S."ID_AssetSchedule" = SS."ID") LEFT JOIN "TradeParameters" TPS ON (SS."ID" = TPS."ID_AssetSchedule")
+      WHERE S."ID" = @prm_ID_AssetSession
+    </SQL>-->
+  </TradeParameters>
+
+  <TradeParameters>
+    <ID>insert_TradeParameters</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "TradeParameters" ("ID_AssetType", "ID_Asset", "ID_Order", "ID_AssetSchedule", "PartialFlagChangeAllowed", "InitialPriceMandatory", "InitialPriceMaintenance", "DiminishedQuantityAllowed", "DiminishedPriceAllowed", "DifferentialPriceAllowed", "DifferentialPriceText", "OppositeDirectionAllowed", "DeltaT", "DeltaT1", "SellWarrantyPercent", "SellWarrantyMU", "SellWarrantyFixed", "BuyWarrantyPercent", "BuyWarrantyMU", "BuyWarrantyFixed")
+      VALUES (@prm_ID_AssetType, @prm_ID_Asset, @prm_ID_Order, @prm_ID_AssetSchedule, @prm_PartialFlagChangeAllowed, @prm_InitialPriceMandatory, @prm_InitialPriceMaintenance, @prm_DiminishedQuantityAllowed, @prm_DiminishedPriceAllowed, @prm_DifferentialPriceAllowed, @prm_DifferentialPriceText, @prm_OppositeDirectionAllowed, @prm_DeltaT, @prm_DeltaT1, @prm_SellWarrantyPercent, @prm_SellWarrantyMU, @prm_SellWarrantyFixed, @prm_BuyWarrantyPercent, @prm_BuyWarrantyMU, @prm_BuyWarrantyFixed)
+    </SQL>
+  </TradeParameters>
+
+  <TradeParameters>
+    <ID>update_TradeParameters</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "TradeParameters" SET
+      "PartialFlagChangeAllowed" = @prm_PartialFlagChangeAllowed,
+      "InitialPriceMandatory" = @prm_InitialPriceMandatory,
+      "InitialPriceMaintenance" = @prm_InitialPriceMaintenance,
+      "DiminishedQuantityAllowed" = @prm_DiminishedQuantityAllowed,
+      "DiminishedPriceAllowed" = @prm_DiminishedPriceAllowed,
+      "DifferentialPriceAllowed" = @prm_DifferentialPriceAllowed,
+      "DifferentialPriceText" = @prm_DifferentialPriceText,
+      "OppositeDirectionAllowed" = @prm_OppositeDirectionAllowed,
+      "DeltaT" = @prm_DeltaT,
+      "DeltaT1" = @prm_DeltaT1,
+      "SellWarrantyPercent" = @prm_SellWarrantyPercent, 
+      "SellWarrantyMU" = @prm_SellWarrantyMU,
+      "SellWarrantyFixed" = @prm_SellWarrantyFixed,
+      "BuyWarrantyPercent" = @prm_BuyWarrantyPercent,
+      "BuyWarrantyMU" = @prm_BuyWarrantyMU,
+      "BuyWarrantyFixed" = @prm_BuyWarrantyFixed
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </TradeParameters>
+
+  <DocumentTypes>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "DocumentTypes" SET "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </DocumentTypes>
+
+  <Documents>
+    <ID>insert_DocumentType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "DocumentTypes" ("ID_Bursary", "Code", "Name")
+      VALUES (@prm_ID_Bursary, @prm_Code, @prm_Name)
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>delete_DocumentType</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "DocumentTypes" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>update_DocumentType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "DocumentTypes" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>insert_Document</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Documents" ("ID_Asset", "ID_DocumentType", "Name", "isPublic", "DateCreated", "LastModifiedDate", "ID_CreatedByUser", "DocumentURL", "FileName")
+      VALUES (@prm_ID_Asset, @prm_ID_DocumentType, @prm_Name, @prm_isPublic, @prm_DateCreated, @prm_LastModifiedDate, @prm_ID_CreatedByUser, @prm_DocumentURL, @prm_FileName)
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>delete_Document</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Documents" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>update_Document</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Documents" SET
+      "ID_Asset" = @prm_ID_Asset,
+      "ID_DocumentType" = @prm_ID_DocumentType,
+      "Name" = @prm_Name,
+      "isPublic" = @prm_isPublic,
+      "LastModifiedDate" = @prm_LastModifiedDate
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Documents>
+
+  <Documents>
+    <ID>update_DocumentURL</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Documents" SET
+      "DocumentURL" = @prm_DocumentURL,
+      "FileName" = @prm_FileName
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Documents>
+
+  <WarrantyTypes>
+    <ID>insert_WarrantyType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "WarrantyTypes" ("Code", "Name", "isValid", "isAvailable4Period", "isAvailable4Asset")
+      VALUES (@prm_Code, @prm_Name, @prm_isValid, @prm_isAvailable4Period, @prm_isAvailable4Asset)
+    </SQL>
+  </WarrantyTypes>
+
+  <WarrantyTypes>
+    <ID>delete_WarrantyType</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "WarrantyTypes" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </WarrantyTypes>
+
+  <WarrantyTypes>
+    <ID>update_WarrantyType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "WarrantyTypes" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "isValid" = @prm_isValid,
+      "isAvailable4Period" = @prm_isAvailable4Period,
+      "isAvailable4Asset" = @prm_isAvailable4Asset
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </WarrantyTypes>
+
+  <WarrantyTypes>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "WarrantyTypes" SET "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </WarrantyTypes>
+
+  <Warranties>
+    <ID>insert_Warranty</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Warranties" ("ID_Agency", "ID_Client", "ID_WarrantyType", "ID_Asset", "ID_CreatedByUser", "ID_Currency", "ValabilityStartDate", "ValabilityEndDate", "ExecutionDate", "ValueInRON", "ValueInCurrency", "ExchangeRate", "DateCreated", "WarrantyNumber")
+      VALUES (@prm_ID_Agency, @prm_ID_Client, @prm_ID_WarrantyType, @prm_ID_Asset, @prm_ID_CreatedByUser, @prm_ID_Currency, @prm_ValabilityStartDate, @prm_ValabilityEndDate, @prm_ExecutionDate, @prm_ValueInRON, @prm_ValueInCurrency, @prm_ExchangeRate, @prm_DateCreated, @prm_WarrantyNumber)
+    </SQL>
+  </Warranties>
+
+  <Warranties>
+    <ID>delete_Warranty</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Warranties" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Warranties>
+
+  <Warranties>
+    <ID>update_Warranty</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Warranties" SET
+      "ID_Agency" = @prm_ID_Agency,
+      "ID_Client" = @prm_ID_Client,
+      "ID_WarrantyType" = @prm_ID_WarrantyType,
+      "ID_Asset" =  @prm_ID_Asset,
+      "ID_CreatedByUser" = @prm_ID_CreatedByUser,
+      "ID_Currency" = @prm_ID_Currency,
+      "ValabilityStartDate" = @prm_ValabilityStartDate,
+      "ValabilityEndDate" = @prm_ValabilityEndDate,
+      "ExecutionDate" = @prm_ExecutionDate,
+      "ValueInRON" = @prm_ValueInRON,
+      "ValueInCurrency" = @prm_ValueInCurrency,
+      "ExchangeRate" = @prm_ExchangeRate,
+      "WarrantyNumber" = @prm_WarrantyNumber
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Warranties>
+
+  <BO_Operations>
+    <ID>select_AvailableWarranty</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT @prm_ID_Client AS "ID_Client", @prm_ID_Asset AS "ID_Asset",
+      IsNull(SUM(TC."Sum" * TC."Percent" * TC."ExchangeRate"), 0) AS "Credit", TD."Debit" + TL."Locked" AS "Debit"
+      FROM
+      (
+      SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+      WHERE (OPT."Code" = 'CRED_WAR') AND (OPXD."ID_ClientSRC" = @prm_ID_Client) AND (OP."isCanceled" = 0)
+      ) TC
+      LEFT JOIN
+      (
+      SELECT IsNull(SUM(OPDP."Sum" * OPDP."Percent" * OPDP."ExchangeRate"), 0) AS "Debit"
+      --SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+      WHERE (OPT."Code" = 'DEB_WAR') AND (OPXD."ID_ClientSRC" = @prm_ID_Client) AND (OP."isCanceled" = 0)
+      ) TD ON (@prm_ID_Client = @prm_ID_Client)
+      LEFT JOIN
+      (
+      SELECT IsNull(SUM(OPDA."Amount"), 0) AS "Locked"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+      WHERE (OPT."Code" = 'LOCK_WAR') AND (OPXD."ID_ClientSRC" = @prm_ID_Client) AND (OP."isCanceled" = 0)
+      AND (OPDA."ID_Order" != @prm_ID_Order)
+      ) TL ON (@prm_ID_Client = @prm_ID_Client)
+      GROUP BY TD."Debit", TL."Locked"
+    </SQL>
+  </BO_Operations>
+  
+  <BO_Operations>
+    <ID>insert_BO_Operation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "BO_Operations" ("ID_OperationType", "Number", "Date", "DateClosed", "isClosed", "isCanceled", "Reference")
+      VALUES ((SELECT "ID" FROM "BO_OperationTypes" WHERE "Code" = @prm_OperationType), (SELECT ISNULL(MAX("Number"), 0) + 1 FROM "BO_Operations"), GETDATE(), GETDATE(), @prm_isClosed, @prm_isCanceled, @prm_Reference)
+    </SQL>
+  </BO_Operations>
+
+  <BO_Operations>
+    <ID>update_BO_Operation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "BO_Operations" SET "Reference" = @prm_Reference WHERE "ID" = @prm_ID_BOperation
+    </SQL>
+  </BO_Operations>
+
+  <BO_Operations>
+    <ID>delete_BO_Operation</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "BO_Operations" SET "isCanceled" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </BO_Operations>
+
+  <BO_Operations>
+    <ID>cancel_WarrantyLock</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "BO_Operations" SET "isCanceled" = 1
+      WHERE "ID" IN 
+      (
+        SELECT TOP 1 OP."ID" FROM "BO_Operations" OP
+        LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+        LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation") AND (OPXD."ObjectType" = 1)
+        LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+        WHERE (OPT."Code" = 'LOCK_WAR') AND (OPDA."ID_Order" = @prm_ID) AND (OP."isCanceled" = 0)
+      )
+    </SQL>
+  </BO_Operations>
+
+  <BO_OperationsXDetails>
+    <ID>insert_BO_OperationXDetails</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "BO_OperationsXDetails" ("ID_Operation", "ID_Parent", "ID_InterNode", "Date", "ObjectType", "Description", "ID_OperationDetail", "ID_ClientSRC", "ID_ClientDEST", "ID_AgencySRC", "ID_AgencyDEST", "ID_Asset", "ID_CreatedByUser", "isCanceled")
+      VALUES (@prm_ID_Operation, @prm_ID_Parent, @prm_ID_InterNode, @prm_Date, @prm_ObjectType, @prm_Description, @prm_ID_OperationDetail, @prm_ID_ClientSRC, @prm_ID_ClientDEST, @prm_ID_AgencySRC, @prm_ID_AgencyDEST, @prm_ID_Asset, @prm_ID_CreatedByUser, @prm_isCanceled)
+    </SQL>
+  </BO_OperationsXDetails>
+
+  <BO_OperationsXDetails>
+    <ID>update_BO_OperationXDetails</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "BO_OperationsXDetails" SET
+      "ID_ClientSRC" = @prm_ID_ClientSRC,
+      "ID_ClientDEST" = @prm_ID_ClientDEST,
+      "ID_AgencySRC" = @prm_ID_AgencySRC,
+      "ID_AgencyDEST" = @prm_ID_AgencyDEST,
+      "ID_Asset" =  @prm_ID_Asset,
+      "ID_CreatedByUser" = @prm_ID_CreatedByUser
+      WHERE "ID_Operation" = @prm_ID_BOperation
+    </SQL>
+  </BO_OperationsXDetails>
+
+  <BO_OperationsXDetails>
+    <ID>delete_BO_OperationXDetails</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "BO_OperationsXDetails" SET "isCanceled" = 1
+      WHERE "ID_Operation" = @prm_ID
+    </SQL>
+  </BO_OperationsXDetails>
+
+  <BO_OperationDetails_Assets>
+    <ID>insert_BO_OperationDetails_Asset</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "BO_OperationDetails_Assets" ("ID_Asset", "ID_Order", "Amount")
+      VALUES (@prm_ID_Asset, @prm_ID_Order, @prm_Amount)
+    </SQL>
+  </BO_OperationDetails_Assets>
+
+  <BO_OperationDetails_Assets>
+    <ID>update_BO_OperationDetails_Asset</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "BO_OperationDetails_Assets" SET
+      "Amount" = @prm_Amount
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_Order" = @prm_ID_Order)
+    </SQL>
+  </BO_OperationDetails_Assets>
+
+  <BO_OperationDetails_Payments>
+    <ID>insert_BO_OperationDetails_Payments</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "BO_OperationDetails_Payments" ("ID_PaymentType", "PaymentDescription", "Sum", "Percent", "isPayed", "PaymentDate", "ID_Currency", "ValabilityStartDate", "ValabilityEndDate", "ExecutionDate", "ExchangeRate")
+      VALUES (@prm_ID_PaymentType, @prm_PaymentDescription, @prm_Sum, @prm_Percent, @prm_isPayed, @prm_PaymentDate, @prm_ID_Currency, @prm_ValabilityStartDate, @prm_ValabilityEndDate, @prm_ExecutionDate, @prm_ExchangeRate)
+    </SQL>
+  </BO_OperationDetails_Payments>
+
+  <BO_OperationDetails_Payments>
+    <ID>update_BO_OperationDetails_Payments</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "BO_OperationDetails_Payments" SET
+      "ID_PaymentType" = @prm_ID_PaymentType,
+      "Sum" = @prm_Sum,
+      "ID_Currency" = @prm_ID_Currency,
+      "ValabilityStartDate" = @prm_ValabilityStartDate,
+      "ValabilityEndDate" = @prm_ValabilityEndDate,
+      "ExecutionDate" = @prm_ExecutionDate,
+      "ExchangeRate" = @prm_ExchangeRate
+      WHERE "ID" = (
+      SELECT "ID_OperationDetail" FROM "BO_OperationsXDetails" WHERE "ID_Operation" = @prm_ID_BOperation
+      )
+    </SQL>
+  </BO_OperationDetails_Payments>
+
+  <Counties>
+    <ID>insert_County</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Counties" ("Code", "Name", "ID_Country")
+      VALUES (@prm_Code, @prm_Name, @prm_ID_Country)
+    </SQL>
+  </Counties>
+
+  <Counties>
+    <ID>delete_County</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Counties" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Counties>
+
+  <Counties>
+    <ID>update_County</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Counties" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name,
+      "ID_Country" = @prm_ID_Country
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Counties>
+
+  <!--  transactions  -->
+  <Transactions>
+    <ID>insert_Transaction</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Transactions" ("Date", "ID_Ring", "ID_RingSession", "ID_Asset", "ID_AssetSession", "ID_BuyOrder", "ID_SellOrder", "Quantity", "Price")
+      VALUES (@prm_Date, @prm_ID_Ring, @prm_ID_RingSession, @prm_ID_Asset, @prm_ID_AssetSession, @prm_ID_BuyOrder, @prm_ID_SellOrder, @prm_Quantity, @prm_Price)
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>update_Transaction</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Transactions" SET
+      "Date" = @prm_Date,
+      "ID_Ring" = @prm_ID_Ring,
+      "ID_Asset" = @prm_ID_Asset,
+      --"ID_BuyOrder" = @prm_ID_BuyOrder,
+      --"ID_SellOrder" = @prm_ID_SellOrder,
+      "Quantity" = @prm_Quantity,
+      "Price" = @prm_Price
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Transactions>
+
+  <Transactions>
+    <ID>delete_Transaction</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "Transactions" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Transactions>
+
+  <Orders>
+    <ID>update_SetOrderisTransacted</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Orders" SET
+      "isTransacted" = @prm_isTransacted
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Orders>
+
+  <Assets>
+    <ID>select_AssetsbyID_MarketandID_Ring</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.*, IsNull(ASS."Status", '') AS "Status" FROM
+      (
+      SELECT A.*, IsNUll((SELECT TOP 1 "ID" FROM "AssetSessions" ASS WHERE (A."ID" = ASS."ID_Asset") AND (CONVERT(VARCHAR, ASS."Date", 102) = CONVERT(VARCHAR, GetDate(), 102))), 0) AS "ID_AssetSession",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      AD."Instructions_RO", AD."Instructions_EN", AD."DeliveryTerm", AD."DeliveryConditions", AD."PackingMethod", AD."PaymentMethod", AD."ContractTerm", AD."WarrantyMethod"
+      FROM "Assets" A
+      --LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Markets" M ON (A."ID_Market" = M."ID")
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      LEFT JOIN "AssetDetails" AD ON (A."ID" = AD."ID_Asset")
+      WHERE (M."ID_Bursary" = @prm_ID_Bursary)
+      AND (("ID_Market" = @prm_ID_Market) OR (@prm_ID_Market = -1))
+      AND (("ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND (("isDeleted" = 0) OR ("isDeleted" is NULL))
+      AND ((A."ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ((A."ID_AssetType" = @prm_ID_AssetType) OR (@prm_ID_AssetType = -1))
+      AND ((A."isActive" = 1) OR (@prm_AnyStatus = 1))
+      ) T
+      LEFT JOIN "AssetSessions" ASS ON (T."ID_AssetSession" = ASS."ID")
+      WHERE (ASS."Status" IS NOT NULL) OR (@prm_All = 1)
+    </SQL>
+  </Assets>
+
+  <AssetSchedules>
+    <ID>select_AssetSchedulesDetailed</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.*,
+      CONCAT(
+      CASE T."daySunday" WHEN 1 THEN 'Su' ELSE '' END, ' ',
+      CASE T."dayMonday" WHEN 1 THEN 'Mo' ELSE '' END, ' ',
+      CASE T."dayTuesday" WHEN 1 THEN 'Tu' ELSE '' END, ' ',
+      CASE T."dayWednesday" WHEN 1 THEN 'We' ELSE '' END, ' ',
+      CASE T."dayThursday" WHEN 1 THEN 'Th' ELSE '' END, ' ',
+      CASE T."dayFriday" WHEN 1 THEN 'Fr' ELSE '' END, ' ',
+      CASE T."daySaturday" WHEN 1 THEN 'Sa' ELSE '' END) AS "DaysOfWeekSTR"
+      FROM
+      (
+      SELECT ASCH.*,
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 1 WHEN 0 THEN 0 ELSE 1 END) AS "daySunday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 2 WHEN 0 THEN 0 ELSE 1 END) AS "dayMonday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 4 WHEN 0 THEN 0 ELSE 1 END) AS "dayTuesday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 8 WHEN 0 THEN 0 ELSE 1 END) AS "dayWednesday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 16 WHEN 0 THEN 0 ELSE 1 END) AS "dayThursday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 32 WHEN 0 THEN 0 ELSE 1 END) AS "dayFriday",
+      CONVERT(BIT, CASE ASCH."DaysOfWeek" &amp; 64 WHEN 0 THEN 0 ELSE 1 END) AS "daySaturday",
+
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."DeltaT", 0) AS "DeltaT",
+      IsNull(TP."DeltaT1", 0) AS "DeltaT1",
+      IsNull(TP."SellWarrantyPercent", 0) AS "SellWarrantyPercent",
+      IsNull(TP."SellWarrantyMU", 0) AS "SellWarrantyMU",
+      IsNull(TP."SellWarrantyFixed", 0) AS "SellWarrantyFixed",
+      IsNUll(TP."BuyWarrantyPercent", 0) AS "BuyWarrantyPercent",
+      IsNull(TP."BuyWarrantyMU", 0) AS "BuyWarrantyMU",
+      IsNull(TP."BuyWarrantyFixed", 0) AS "BuyWarrantyFixed"
+
+      FROM "AssetSchedules" ASCH
+      LEFT JOIN "Assets" A ON (ASCH."ID_Asset" = A."ID")
+      LEFT JOIN "TradeParameters" TP ON (ASCH."ID" = TP."ID_AssetSchedule")
+      WHERE ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND ((A."ID_Ring" = @prm_ID_Ring) OR (@prm_ID_Ring = -1))
+      AND ((ASCH."ID" = @prm_ID_AssetSchedule) OR (@prm_ID_AssetSchedule = -1))
+      AND (ASCH."isActive" = 1)
+      ) T
+    </SQL>
+  </AssetSchedules>
+
+  <Orders>
+    <ID>select_InitialOrders</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.*, J."Quantity" AS "JournalQuantity", J."Price" AS "JournalPrice" FROM
+      (
+        SELECT O.*, (SELECT MIN("ID") FROM "Journal" WHERE ("ID_Asset" = O."ID_Asset") AND ("ID_Order" != 0) AND ("ID_Client" = O."ID_Client")) AS "ID_Journal"
+        FROM "Assets" A
+        LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+        WHERE ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1)) AND ("ID_InitialOrder" > 0)
+      ) T
+      LEFT JOIN "Journal" J ON (T."ID_Journal" = J."ID")
+    </SQL>
+    <!--<SQL>
+      SELECT O.*
+      FROM "Assets" A
+      LEFT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      WHERE "ID_InitialOrder" > 0
+    </SQL>-->
+  </Orders>
+
+  <Assets>
+    <ID>select_AssetTradeParameters</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT A."ID" AS "ID_Asset", A."Code", A."Name",
+      IsNull(TP."PartialFlagChangeAllowed", 0) AS "PartialFlagChangeAllowed",
+      IsNull(TP."InitialPriceMandatory", 0) AS "InitialPriceMandatory",
+      IsNull(TP."InitialPriceMaintenance", 0) AS "InitialPriceMaintenance",
+      IsNull(TP."DiminishedQuantityAllowed", 0) AS "DiminishedQuantityAllowed",
+      IsNull(TP."DiminishedPriceAllowed", 0) AS "DiminishedPriceAllowed",
+      IsNull(TP."DifferentialPriceAllowed", 0) AS "DifferentialPriceAllowed",
+      IsNull(TP."OppositeDirectionAllowed", 0) AS "OppositeDirectionAllowed",
+      IsNull(TP."SellWarrantyPercent", 0) AS "SellWarrantyPercent",
+      IsNull(TP."SellWarrantyMU", 0) AS "SellWarrantyMU",
+      IsNull(TP."SellWarrantyFixed", 0) AS "SellWarrantyFixed",
+      IsNull(TP."BuyWarrantyPercent", 0) AS "BuyWarrantyPercent",
+      IsNull(TP."BuyWarrantyMU", 0) AS "BuyWarrantyMU",
+      IsNull(TP."BuyWarrantyFixed", 0) AS "BuyWarrantyFixed"
+      FROM "Assets" A
+      LEFT JOIN "TradeParameters" TP ON (A."ID" = TP."ID_Asset")
+      WHERE (A."ID" = @prm_ID_Asset)
+    </SQL>
+  </Assets>
+
+  <Rings>
+    <ID>select_AssetClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "Code", "Name", "ID_Asset", "ID_Client", "ID_Agency",
+      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy",
+      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell",
+      "FiscalCode", "RegisterCode", "CompanyName" FROM
+      (
+      SELECT C."Code", C."Name", A."ID" AS "ID_Asset", C."ID" AS "ID_Client",
+      ~O."Direction" AS "canBuy", O."Direction" AS "canSell",
+      I."FiscalCode", I."RegisterCode", I."CompanyName", C."ID_Agency"
+      FROM "Assets" A
+      RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") --AND (I."ID_Agency" = 0)
+      WHERE A."ID" = @prm_ID_Asset
+
+      UNION ALL
+
+      SELECT C."Code", C."Name", AXC."ID_Asset", AXC."ID_Client",
+      AXC."canBuy", AXC."canSell", I."FiscalCode", I."RegisterCode", I."CompanyName", C."ID_Agency"
+      FROM "Clients" C
+      LEFT JOIN "Identities" I ON (C."ID" = I."ID_Client") --AND (I."ID_Agency" = 0)
+      LEFT JOIN "AssetsXClients" AXC ON (C."ID" = AXC."ID_Client")
+      WHERE ((AXC."ID_Asset" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))
+      AND (AXC."isDeleted" = 0) AND ((AXC."canBuy" = 1) OR (AXC."canSell" = 1))
+      ) T
+      GROUP BY T."Code", T."Name", T."ID_Asset", T."ID_Client", T."FiscalCode", T."RegisterCode", T."CompanyName", T."ID_Agency"
+    </SQL>
+  </Rings>
+
+  <Rings>
+    <ID>set_RingXWarrantyType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      IF (SELECT TOP 1 "ID" FROM "RingsXWarrantyTypes" WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)) IS NOT NULL
+      BEGIN
+      IF @prm_isDeleted = 0
+      BEGIN
+      UPDATE "RingsXWarrantyTypes" SET "isDeleted" = 0, "Priority" = (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "RingsXWarrantyTypes" WHERE "ID_Ring" = @prm_ID_Ring AND isDeleted = 0)
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+      END
+      ELSE
+      BEGIN
+      UPDATE "RingsXWarrantyTypes" SET "isDeleted" = 1, "Priority" = 0
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+
+      DECLARE @id AS INT;
+      DECLARE @priority AS INT;
+      SET @priority = 0;
+      DECLARE crs CURSOR FOR SELECT "ID" FROM "RingsXWarrantyTypes" RXWT WHERE "ID_Ring" = @prm_ID_Ring AND "isDeleted" = 0 ORDER BY "Priority"
+      OPEN crs
+      FETCH NEXT FROM crs INTO @id
+      WHILE @@FETCH_STATUS = 0
+      BEGIN
+      SET @priority = @priority + 1;
+      UPDATE "RingsXWarrantyTypes" SET "Priority" = @priority WHERE "ID" = @id
+      FETCH NEXT FROM crs INTO @id
+      END
+      CLOSE crs
+      DEALLOCATE crs
+      END
+      END
+      ELSE
+      INSERT INTO "RingsXWarrantyTypes" ("ID_Ring", "ID_WarrantyType", "isDeleted", "Priority")
+      VALUES (@prm_ID_Ring, @prm_ID_WarrantyType, @prm_isDeleted,
+      (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "RingsXWarrantyTypes" WHERE "ID_Ring" = @prm_ID_Ring AND isDeleted = 0))
+    </SQL>
+    <!--<SQL>
+      IF (SELECT TOP 1 "ID" FROM "RingsXWarrantyTypes" WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)) IS NOT NULL
+      UPDATE "RingsXWarrantyTypes" SET "isDeleted" = @prm_isDeleted, "Priority" = (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "RingsXWarrantyTypes" WHERE "ID_Ring" = @prm_ID_Ring AND isDeleted = @prm_IsDeleted)
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+      ELSE
+      INSERT INTO "RingsXWarrantyTypes" ("ID_Ring", "ID_WarrantyType", "isDeleted", "Priority")
+      VALUES (@prm_ID_Ring, @prm_ID_WarrantyType, @prm_isDeleted,
+      (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "RingsXWarrantyTypes" WHERE "ID_Ring" = @prm_ID_Ring AND isDeleted = @prm_IsDeleted))
+    </SQL>-->
+    <!--<SQL>
+      IF (SELECT TOP 1 "ID" FROM "RingsXWarrantyTypes" WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)) IS NOT NULL
+      UPDATE "RingsXWarrantyTypes" SET "isDeleted" = @prm_isDeleted WHERE ("ID_Ring" = @prm_ID_Ring) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+      ELSE
+      INSERT INTO "RingsXWarrantyTypes" ("ID_Ring", "ID_WarrantyType", "isDeleted") VALUES (@prm_ID_Ring, @prm_ID_WarrantyType, @prm_isDeleted)
+    </SQL>-->
+  </Rings>
+
+  <Rings>
+    <ID>set_AssetXWarrantyType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      IF (SELECT TOP 1 "ID" FROM "AssetsXWarrantyTypes" WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)) IS NOT NULL
+      BEGIN
+      IF @prm_isDeleted = 0
+      BEGIN
+      UPDATE "AssetsXWarrantyTypes" SET "isDeleted" = 0, "Priority" = (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "AssetsXWarrantyTypes" WHERE "ID_Asset" = @prm_ID_Asset AND isDeleted = 0)
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+      END
+      ELSE
+      BEGIN
+      UPDATE "AssetsXWarrantyTypes" SET "isDeleted" = 1, "Priority" = 0
+      WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+
+      DECLARE @id AS INT;
+      DECLARE @priority AS INT;
+      SET @priority = 0;
+      DECLARE crs CURSOR FOR SELECT "ID" FROM "AssetsXWarrantyTypes" RXWT WHERE "ID_Asset" = @prm_ID_Asset AND "isDeleted" = 0 ORDER BY "Priority"
+      OPEN crs
+      FETCH NEXT FROM crs INTO @id
+      WHILE @@FETCH_STATUS = 0
+      BEGIN
+      SET @priority = @priority + 1;
+      UPDATE "AssetsXWarrantyTypes" SET "Priority" = @priority WHERE "ID" = @id
+      FETCH NEXT FROM crs INTO @id
+      END
+      CLOSE crs
+      DEALLOCATE crs
+      END
+      END
+      ELSE
+      INSERT INTO "AssetsXWarrantyTypes" ("ID_Asset", "ID_WarrantyType", "isDeleted", "Priority")
+      VALUES (@prm_ID_Asset, @prm_ID_WarrantyType, @prm_isDeleted,
+      (SELECT ISNULL(MAX("Priority"),0) + 1 FROM "AssetsXWarrantyTypes" WHERE "ID_Asset" = @prm_ID_Asset AND isDeleted = 0))
+    </SQL>
+    <!--<SQL>
+      IF (SELECT TOP 1 "ID" FROM "AssetsXWarrantyTypes" WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)) IS NOT NULL
+      UPDATE "AssetsXWarrantyTypes" SET "isDeleted" = @prm_isDeleted WHERE ("ID_Asset" = @prm_ID_Asset) AND ("ID_WarrantyType" = @prm_ID_WarrantyType)
+      ELSE
+      INSERT INTO "AssetsXWarrantyTypes" ("ID_Asset", "ID_WarrantyType", "isDeleted") VALUES (@prm_ID_Asset, @prm_ID_WarrantyType, @prm_isDeleted)
+    </SQL>-->
+  </Rings>
+
+  <Rings>
+    <ID>select_RingWarrantyType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT RXWT."ID_Ring", RXWT."ID_WarrantyType", WT."Name", WT."Code", WT."Name", WT."isAvailable4Period" , WT."isAvailable4Asset", WT."ID", RXWT."Priority"
+      FROM "RingsXWarrantyTypes" RXWT
+      LEFT JOIN "WarrantyTypes" WT ON (RXWT."ID_WarrantyType" = WT."ID")
+      WHERE (RXWT."ID_Ring" = @prm_ID_Ring) AND (RXWT."isDeleted" = 0) AND (WT."isDeleted" = 0)
+      ORDER BY RXWT."Priority"
+    </SQL>  
+  </Rings>
+  
+  <Rings>
+    <ID>select_AssetWarrantyType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT AXWT."ID_Asset", AXWT."ID_WarrantyType", WT."Name", WT."Code", WT."Name", WT."isAvailable4Period" , WT."isAvailable4Asset", WT."ID"
+      FROM "AssetsXWarrantyTypes" AXWT
+      LEFT JOIN "WarrantyTypes" WT ON (AXWT."ID_WarrantyType" = WT."ID")
+      WHERE (AXWT."ID_Asset" = @prm_ID_Asset) AND (WT."isDeleted" = 0) AND (AXWT."isDeleted") = 0
+    </SQL>
+  </Rings>
+
+  <RingsXWarrantyTypes>
+    <ID>setWarrantyTypePriority</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      SELECT ROW_NUMBER() OVER (ORDER BY "Priority" ASC) AS "Row", RXWT.*
+      INTO #tmp
+      FROM "RingsXWarrantyTypes" RXWT
+      WHERE RXWT."ID_Ring" = @prm_ID_Ring AND RXWT."isDeleted" = 0
+      ORDER BY RXWT."Priority"
+
+      DECLARE @NewPriority AS INT
+      SELECT @NewPriority = "Row" FROM #tmp WHERE "ID_WarrantyType" = @prm_ID_WarrantyType
+
+      IF @NewPriority IS NOT NULL
+      BEGIN
+        SET @NewPriority = @NewPriority + @prm_Offset
+        IF @NewPriority &lt;= 0 SET @NewPriority = 1
+        IF @NewPriority &gt;= IsNull((SELECT MAX(IsNull("Row", 0)) FROM #tmp), 1) SET @NewPriority = IsNull((SELECT MAX(IsNull("Row", 0)) FROM #tmp), 1)
+
+        DECLARE @Row AS INT
+        DECLARE @ID_WarrantyType AS INT
+        DECLARE @NewRow AS INT
+        SET @NewRow = 0
+
+        DECLARE crs CURSOR FOR SELECT "Row", "ID_WarrantyType" FROM #tmp
+        OPEN crs
+
+        FETCH NEXT FROM crs INTO @Row, @ID_WarrantyType
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+          SET @NewRow = @NewRow + 1
+          IF (@NewRow = @NewPriority) AND (@ID_WarrantyType != @prm_ID_WarrantyType) SET @NewRow = @NewRow - @prm_Offset
+
+          IF @ID_WarrantyType = @prm_ID_WarrantyType
+          BEGIN
+            IF (@NewRow &gt; @NewPriority) SET @NewRow = @NewRow + @prm_Offset
+            UPDATE #tmp SET "Row" = @NewPriority WHERE "ID_WarrantyType" = @ID_WarrantyType
+          END ELSE BEGIN
+            IF (@prm_Offset &lt; 0) AND (@Row &gt;= @NewPriority) UPDATE #tmp SET "Row" = @NewRow WHERE "ID_WarrantyType" = @ID_WarrantyType
+			      IF (@prm_Offset &gt; 0) AND (@Row &lt;= @NewPriority) UPDATE #tmp SET "Row" = @NewRow WHERE "ID_WarrantyType" = @ID_WarrantyType
+          END
+
+          FETCH NEXT FROM crs INTO @Row, @ID_WarrantyType
+        END
+
+        CLOSE crs
+        DEALLOCATE crs
+      END
+
+      UPDATE "RingsXWarrantyTypes" SET
+      "Priority" = #tmp."Row"
+      FROM #tmp
+      WHERE ("RingsXWarrantyTypes"."ID_Ring"= @prm_ID_Ring) AND ("RingsXWarrantyTypes"."ID_WarrantyType" = #tmp."ID_WarrantyType")
+
+      DROP TABLE #tmp
+    </SQL>
+  </RingsXWarrantyTypes>
+
+  <AssetsXWarrantyTypes>
+    <ID>setWarrantyTypePriority</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      SELECT ROW_NUMBER() OVER (ORDER BY "Priority" ASC) AS "Row", RXWT.*
+      INTO #tmp
+      FROM "AssetsXWarrantyTypes" RXWT
+      WHERE RXWT."ID_Asset" = @prm_ID_Asset AND RXWT."isDeleted" = 0
+      ORDER BY RXWT."Priority"
+
+      DECLARE @NewPriority AS INT
+      SELECT @NewPriority = "Row" FROM #tmp WHERE "ID_WarrantyType" = @prm_ID_WarrantyType
+
+      IF @NewPriority IS NOT NULL
+      BEGIN
+        SET @NewPriority = @NewPriority + @prm_Offset
+        IF @NewPriority &lt;= 0 SET @NewPriority = 1
+        IF @NewPriority &gt;= IsNull((SELECT MAX(IsNull("Row", 0)) FROM #tmp), 1) SET @NewPriority = IsNull((SELECT MAX(IsNull("Row", 0)) FROM #tmp), 1)
+
+        DECLARE @Row AS INT
+        DECLARE @ID_WarrantyType AS INT
+        DECLARE @NewRow AS INT
+        SET @NewRow = 0
+
+        DECLARE crs CURSOR FOR SELECT "Row", "ID_WarrantyType" FROM #tmp
+        OPEN crs
+
+        FETCH NEXT FROM crs INTO @Row, @ID_WarrantyType
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+          SET @NewRow = @NewRow + 1
+          IF (@NewRow = @NewPriority) AND (@ID_WarrantyType != @prm_ID_WarrantyType) SET @NewRow = @NewRow - @prm_Offset
+
+          IF @ID_WarrantyType = @prm_ID_WarrantyType
+          BEGIN
+            IF (@NewRow &gt; @NewPriority) SET @NewRow = @NewRow + @prm_Offset
+            UPDATE #tmp SET "Row" = @NewPriority WHERE "ID_WarrantyType" = @ID_WarrantyType
+          END ELSE BEGIN
+            IF (@prm_Offset &lt; 0) AND (@Row &gt;= @NewPriority) UPDATE #tmp SET "Row" = @NewRow WHERE "ID_WarrantyType" = @ID_WarrantyType
+			      IF (@prm_Offset &gt; 0) AND (@Row &lt;= @NewPriority) UPDATE #tmp SET "Row" = @NewRow WHERE "ID_WarrantyType" = @ID_WarrantyType
+          END
+
+          FETCH NEXT FROM crs INTO @Row, @ID_WarrantyType
+        END
+
+        CLOSE crs
+        DEALLOCATE crs
+      END
+
+      UPDATE "AssetsXWarrantyTypes" SET
+      "Priority" = #tmp."Row"
+      FROM #tmp
+      WHERE ("AssetsXWarrantyTypes"."ID_Asset"= @prm_ID_Asset) AND ("AssetsXWarrantyTypes"."ID_WarrantyType" = #tmp."ID_WarrantyType")
+
+      DROP TABLE #tmp
+    </SQL>
+  </AssetsXWarrantyTypes>
+  
+  <Documents>
+    <ID>select_Documents</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DT."Name" AS "DocumentType", IsNull(A."Name", '') AS "AssetName", U."LoginName" AS "User", D.*
+      FROM "Documents" D
+      LEFT JOIN "DocumentTypes" DT ON (D."ID_DocumentType" = DT."ID")
+      LEFT JOIN "Users" U ON (D."ID_CreatedByUser" = U."ID")
+      LEFT JOIN "Assets" A ON (D."ID_Asset" = A."ID")
+      WHERE ((D."ID" = @prm_ID_Document) OR (@prm_ID_Document = -1))
+      AND ((A."ID" = @prm_ID_Asset) OR (@prm_ID_Asset = -1))  AND (D."isDeleted" = 0)
+    </SQL>
+  </Documents>
+  
+  <BO_OperationsBuffer>
+    <ID>update_BO_OperantionsBuffer</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "BO_OperationsBuffer" SET
+      "isProcessed" = 1
+      WHERE "ID" = @prm_ID_BO_OperationBuffer
+    </SQL>
+  </BO_OperationsBuffer>
+
+  <Procedures>
+    <ID>select_Procedures</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT GetDate() AS "DBNow", P.*, PO.* FROM "Procedures" P
+      LEFT JOIN "ProcedureOptions" PO ON (P."ID" = PO."ID_Procedure")
+      WHERE (P."ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </Procedures>
+  
+  <Procedures>
+    <ID>select_LastProcedure</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 * FROM "Procedures"
+      ORDER BY "ID" DESC
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>insert_Procedure</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Procedures" ("Date", "ID_Agency", "ID_Broker", "ID_Client", "Name", "Description", "ID_ContractType", "Location", "Legislation", "Duration", "TotalValue", "ID_ProcedureType", "ID_ProcedureCriterion", "Status")
+      VALUES (GetDate(), @prm_ID_Agency, @prm_ID_Broker, @prm_ID_Client, @prm_Name, @prm_Description, @prm_ID_ContractType, @prm_Location, @prm_Legislation, @prm_Duration, @prm_TotalValue, @prm_ID_ProcedureType, @prm_ID_ProcedureCriterion, @prm_Status)
+    </SQL>
+  </Procedures>
+  
+  <Procedures>
+    <ID>update_Procedure</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Procedures" SET
+      "Date" = GetDate(),
+      "Name" = @prm_Name,
+      "Description" = @prm_Description,
+      "ID_ContractType" = @prm_ID_ContractType,
+      "Location" = @prm_Location,
+      "Legislation" = @prm_Legislation,
+      "Duration" = @prm_Duration,
+      "TotalValue" = @prm_TotalValue,
+      "ID_ProcedureType" = @prm_ID_ProcedureType,
+      "ID_ProcedureCriterion" = @prm_ID_ProcedureCriterion
+      --"Status" = @prm_Status
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>delete_Procedure</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Procedures" SET "isDeleted" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>update_ProcedureStatus</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Procedures" SET 
+      "Status" = @prm_Status,
+      "ID_AgencyWinner" = @prm_ID_AgencyWinner
+      WHERE "ID" = @prm_ID_Procedure
+    </SQL>
+  </Procedures>
+
+  <Procedures>
+    <ID>SetProcedureVariable</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      EXEC "SetProcedureVariable" @prm_ID_Procedure, @prm_Key, @prm_Value
+      
+      SELECT NULL
+    </SQL>
+  </Procedures>
+
+  <ProcedureOptions>
+    <ID>select_ProcedureOptions</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "ProcedureOptions" WHERE "ID_Procedure" = @prm_ID_Procedure
+    </SQL>
+  </ProcedureOptions>
+
+  <ProcedureOptions>
+    <ID>insert_ProcedureOption</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+		  INSERT INTO "ProcedureOptions" ("ID_Procedure", "Forms", "EconomicCapacity", "TechnicalCapacity", "ClarificationRequestsDeadline", "TendersReceiptDeadline", "TendersOpeningDate", "ContestationsSubmission", "OtherInformation", "Necessity")
+		  VALUES (@prm_ID_Procedure, @prm_Forms, @prm_EconomicCapacity, @prm_TechnicalCapacity, @prm_ClarificationRequestsDeadline, @prm_TendersReceiptDeadline, @prm_TendersOpeningDate, @prm_ContestationsSubmission, @prm_OtherInformation, @prm_Necessity)
+    </SQL>
+  </ProcedureOptions>
+
+  <ProcedureOptions>
+    <ID>update_ProcedureOption</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+		  UPDATE "ProcedureOptions" SET
+		  "Forms" = @prm_Forms,
+		  "EconomicCapacity" = @prm_EconomicCapacity,
+		  "TechnicalCapacity" = @prm_TechnicalCapacity,
+		  "ClarificationRequestsDeadline" = @prm_ClarificationRequestsDeadline,
+		  "TendersReceiptDeadline" = @prm_TendersReceiptDeadline,
+		  "TendersOpeningDate" = @prm_TendersOpeningDate,
+		  "ContestationsSubmission" = @prm_ContestationsSubmission,
+		  "OtherInformation" = @prm_OtherInformation,
+		  "Necessity" = @prm_Necessity
+		  WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureOptions>
+
+  <ProcedureClassification>
+    <ID>insert_ProcedureClassification</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ProcedureClassification" ("ID_Procedure", "ID_CPV")
+      VALUES (@prm_ID_Procedure, @prm_ID_CPV)
+    </SQL>
+  </ProcedureClassification>
+
+  <ProcedureClassification>
+    <ID>delete_ProcedureClassification</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      DELETE FROM "ProcedureClassification"
+      WHERE "ID_Procedure" = @prm_ID_Procedure
+    </SQL>
+  </ProcedureClassification>
+
+  <ProcedureDocuments>
+    <ID>insert_ProcedureDocument</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ProcedureDocuments" ("ID_Procedure", "Name", "DateCreated", "LastModifiedDate", "ID_CreatedByUser", "DocumentURL", "FileName", "Value")
+      VALUES (@prm_ID_Procedure, @prm_Name, @prm_DateCreated, @prm_LastModifiedDate, @prm_ID_CreatedByUser, @prm_DocumentURL, @prm_FileName, @prm_Value)
+    </SQL>
+  </ProcedureDocuments>
+
+  <ProcedureDocuments>
+    <ID>delete_ProcedureDocument</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      UPDATE "ProcedureDocuments" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureDocuments>
+
+  <ProcedureDocuments>
+    <ID>update_ProcedureDocument</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ProcedureDocuments" SET
+      "ID_Procedure" = @prm_ID_Procedure,
+      "Name" = @prm_Name,
+      "LastModifiedDate" = @prm_LastModifiedDate,
+      "Value" = @prm_Value
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureDocuments>
+
+  <ProcedureDocuments>
+    <ID>update_ProcedureDocumentURL</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ProcedureDocuments" SET
+      "DocumentURL" = @prm_DocumentURL,
+      "FileName" = @prm_FileName
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureDocuments>
+
+  <FavouriteProcedures>
+    <ID>setFavouriteProcedure</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      IF (SELECT "ID" FROM "FavouriteProcedures" WHERE ("ID_Client" = @prm_ID_Client) AND ("ID_Procedure" = @prm_ID_Procedure)) IS NULL
+      BEGIN
+        INSERT INTO "FavouriteProcedures" ("ID_Client", "ID_Procedure")
+        VALUES (@prm_ID_Client, @prm_ID_Procedure)
+      END ELSE BEGIN
+        UPDATE "FavouriteProcedures" SET 
+        "ID_Client" = @prm_ID_Client, "ID_Procedure" = @prm_ID_Procedure
+        WHERE ("ID_Client" = @prm_ID_Client) AND ("ID_Procedure" = @prm_ID_Procedure)
+      END
+    </SQL>
+  </FavouriteProcedures>
+
+  <FavouriteProcedures>
+    <ID>resetFavouriteProcedure</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      DELETE FROM "FavouriteProcedures" 
+      WHERE ("ID_Client" = @prm_ID_Client) AND ("ID_Procedure" = @prm_ID_Procedure)
+    </SQL>
+  </FavouriteProcedures>
+
+  <Forms>
+    <ID>insert_Form</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Forms" ("Name", "Step", "isActive", "Template", "ExportTemplate", "Status")
+      VALUES (@prm_Name, @prm_Step, @prm_isActive, @prm_Template, @prm_ExportTemplate, @prm_Status)
+    </SQL>
+  </Forms>
+
+  <Forms>
+    <ID>update_Form</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Forms" SET 
+      "Name" = @prm_Name,
+      "Step" = @prm_Step,
+      "isActive" = @prm_isActive
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Forms>
+
+  <Forms>
+    <ID>update_FormTemplate</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Forms" SET 
+      "Template" = @prm_Template,
+      "Status" = @prm_Status
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Forms>
+
+  <Forms>
+    <ID>update_ExportTemplate</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Forms" SET
+      "ExportTemplate" = @prm_ExportTemplate
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Forms>
+
+  <Forms>
+    <ID>delete_Form</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "Forms" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Forms>
+
+  
+  <!-- 20150814-->
+  <ProcedureTypes>
+    <ID>insert_ProcedureType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ProcedureTypes" ("Name", "Description", "ValueThreshold", "ClarificationRequestsOffset", "TendersReceiptOffset")
+      VALUES (@prm_Name, @prm_Description, @prm_ValueThreshold, @prm_ClarificationRequestsOffset, @prm_TendersReceiptOffset)
+    </SQL>
+  </ProcedureTypes>
+
+  <ProcedureTypes>
+    <ID>update_ProcedureType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureTypes" SET
+      "Name" = @prm_Name,
+      "Description" = @prm_Description,
+      "ValueThreshold" = @prm_ValueThreshold,
+      "ClarificationRequestsOffset" = @prm_ClarificationRequestsOffset,
+      "TendersReceiptOffset" = @prm_TendersReceiptOffset
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureTypes>
+
+  <ProcedureTypes>
+    <ID>select_LastProcedureType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "ProcedureTypes"
+      ORDER BY "ID" DESC
+    </SQL>
+  </ProcedureTypes>
+
+  <ProcedureTypes>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ProcedureTypes" SET "Name" = @prm_Name, "Description" = @prm_Description WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureTypes>
+
+  <ProcedureTypes>
+    <ID>delete_ProcedureType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureTypes" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureTypes>
+
+  
+
+  <ContractTypes>
+    <ID>insert_ContractType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ContractTypes" ("Name")
+      VALUES (@prm_Name)
+    </SQL>
+  </ContractTypes>
+
+  <ContractTypes>
+    <ID>update_ContractType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ContractTypes" SET
+      "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ContractTypes>
+
+  <ContractTypes>
+    <ID>select_LastContractType</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "ContractTypes"
+      ORDER BY "ID" DESC
+    </SQL>
+  </ContractTypes>
+
+  <ContractTypes>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ContractTypes" SET "Name" = @prm_Name WHERE "ID" = @prm_ID
+    </SQL>
+  </ContractTypes>
+
+  <ContractTypes>
+    <ID>delete_ContractType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ContractTypes" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ContractTypes>
+
+
+  <ProcedureLegislations>
+    <ID>insert_ProcedureLegislation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ProcedureLegislations" ("Name", "Description")
+      VALUES (@prm_Name, @prm_Description)
+    </SQL>
+  </ProcedureLegislations>
+
+  <ProcedureLegislations>
+    <ID>update_ProcedureLegislation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureLegislations" SET
+      "Name" = @prm_Name,
+      "Description" = @prm_Description
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureLegislations>
+
+  <ProcedureLegislations>
+    <ID>select_LastProcedureLegislation</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "ProcedureLegislations"
+      ORDER BY "ID" DESC
+    </SQL>
+  </ProcedureLegislations>
+
+  <ProcedureLegislations>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ProcedureLegislations" SET "Name" = @prm_Name, "Description" = @prm_Description WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureLegislations>
+
+  <ProcedureLegislations>
+    <ID>delete_ProcedureLegislation</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureLegislations" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureLegislations>
+
+
+  <ProcedureCriteria>
+    <ID>insert_ProcedureCriteria</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "ProcedureCriteria" ("Name", "Description")
+      VALUES (@prm_Name, @prm_Description)
+    </SQL>
+  </ProcedureCriteria>
+
+  <ProcedureCriteria>
+    <ID>update_ProcedureCriteria</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureCriteria" SET
+      "Name" = @prm_Name,
+      "Description" = @prm_Description
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureCriteria>
+
+  <ProcedureCriteria>
+    <ID>select_LastProcedureCriteria</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT TOP 1 *
+      FROM "ProcedureCriteria"
+      ORDER BY "ID" DESC
+    </SQL>
+  </ProcedureCriteria>
+
+  <ProcedureCriteria>
+    <ID>update_TextFields</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "ProcedureCriteria" SET "Name" = @prm_Name, "Description" = @prm_Description WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureCriteria>
+
+  <ProcedureCriteria>
+    <ID>delete_ProcedureCriteria</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "ProcedureCriteria" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </ProcedureCriteria>
+  
+  <Clients>
+    <ID>select_BrokerClients</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "ID_Client", "Code", "Name", "canBuy", "canSell", "Credit" - "Debit" AS "AvailableWarranty" FROM
+      (
+      SELECT "ID_Client", "Code", "Name",
+      CONVERT(BIT, CASE SUM(CAST("canBuy" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canBuy",
+      CONVERT(BIT, CASE SUM(CAST("canSell" AS INT)) WHEN 0 THEN 0 ELSE 1 END) AS "canSell",
+      (
+      SELECT IsNull(SUM(TC."Sum" * TC."Percent" * TC."ExchangeRate"), 0) AS "Credit" FROM
+      (
+      SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+      WHERE (OPT."Code" = 'CRED_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+      ) TC
+      ) AS "Credit",
+      (
+      SELECT TD."Debit" + TL."Locked" AS "Debit" FROM
+      (
+      SELECT IsNull(SUM(OPDP."Sum" * OPDP."Percent" * OPDP."ExchangeRate"), 0) AS "Debit"
+      --SELECT OP."Date", WT."Code", OPDP."Sum", OPDP."Percent", OPDP."ID_Currency", OPDP."ExchangeRate", OPDP."ValabilityStartDate", OPDP."ValabilityEndDate", OPDP."ExecutionDate"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Payments" OPDP ON (OPXD."ID_OperationDetail" = OPDP."ID")
+      LEFT JOIN "WarrantyTypes" WT ON (OPDP."ID_PaymentType" = WT."ID")
+      WHERE (OPT."Code" = 'DEB_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+      ) TD
+      LEFT JOIN
+      (
+      SELECT IsNull(SUM(OPDA."Amount"), 0) AS "Locked"
+      FROM "BO_Operations" OP
+      LEFT JOIN "BO_OperationTypes" OPT ON (OP."ID_OperationType" = OPT."ID")
+      LEFT JOIN "BO_OperationsXDetails" OPXD ON (OP."ID" = OPXD."ID_Operation")
+      LEFT JOIN "BO_OperationDetails_Assets" OPDA ON (OPXD."ID_OperationDetail" = OPDA."ID")
+      WHERE (OPT."Code" = 'LOCK_WAR') AND (OPXD."ID_ClientSRC" = T."ID_Client") AND (OP."isCanceled" = 0)
+      AND (OPDA."ID_Order" != @prm_ID_Order)
+      ) TL ON (1 = 1)
+      ) AS "Debit"
+      FROM
+      (
+      SELECT C."ID" AS "ID_Client", C."Code", C."Name",
+      ~O."Direction" AS "canBuy", O."Direction" AS "canSell"
+      FROM "Assets" A
+      RIGHT JOIN "Orders" O ON (A."ID_InitialOrder" = O."ID")
+      LEFT JOIN "Clients" C ON (O."ID_Client" = C."ID")
+      LEFT JOIN "Brokers" B ON (O."ID_Agency" = B."ID_Agency") AND (B."isDeleted" = 0)
+      WHERE (A."ID" = @prm_ID_Asset) AND ((B."ID" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+
+      UNION ALL
+
+      SELECT C."ID" AS "ID_Client", C."Code", C."Name", AXC."canBuy", AXC."canSell" FROM "AssetsXClients" AXC
+      LEFT JOIN "Clients" C ON (AXC."ID_Client" = C."ID")
+      LEFT JOIN "Agencies" A ON (C."ID_Agency" = A."ID")
+      LEFT JOIN "Brokers" B ON (A."ID" = B."ID_Agency") AND (B."isDeleted" = 0)
+      WHERE (AXC."ID_Asset" = @prm_ID_Asset)
+      AND ((B."ID" = @prm_ID_Broker) OR (@prm_ID_Broker = -1))
+      ) T
+      GROUP BY T."ID_Client", T."Code", T."Name"
+      ) T
+    </SQL>
+  </Clients>
+
+  <REMIT_DataSources>
+    <ID>select_REMIT_DataSources</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "REMIT_DataSources"
+      WHERE ("isDeleted" = 0) AND (("DataSourceType" = @prm_DataSourceType) OR (@prm_DataSourceType = ''))
+    </SQL>
+  </REMIT_DataSources>
+
+  <REMIT_DataSources>
+    <ID>insert_REMIT_DataSource</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_DataSources" ("DataSourceName", "DataSourceType", "isActive")
+      VALUES (@prm_DataSourceName, @prm_DataSourceType, @prm_isActive)
+    </SQL>
+  </REMIT_DataSources>
+
+  <REMIT_DataSources>
+    <ID>delete_REMIT_DataSource</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_DataSources" SET "isDeleted" = 1
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSources>
+
+  <REMIT_DataSources>
+    <ID>update_REMIT_DataSource</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "REMIT_DataSources" SET
+      "DataSourceName" = @prm_DataSourceName, 
+      "DataSourceType" = @prm_DataSourceType, 
+      "isActive" = @prm_isActive
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSources>
+
+  <REMIT_ContractNames>
+    <ID>insert_REMIT_ContractName</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_ContractNames" ("Name") VALUES (@prm_Name)
+    </SQL>
+  </REMIT_ContractNames>
+
+  <REMIT_ContractNames>
+    <ID>delete_REMIT_ContractName</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_ContractNames" SET "isDeleted" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_ContractNames>
+
+  <REMIT_ContractNames>
+    <ID>update_REMIT_ContractName</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_ContractNames" SET "Name" = @prm_Name WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_ContractNames>
+
+  <REMIT_ContractTypes>
+    <ID>insert_REMIT_ContractType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_ContractTypes" ("Code", "Name", "enableTable1", "enableTable2") 
+      VALUES (@prm_Code, @prm_Name, @prm_enableTable1, @prm_enableTable2)      
+    </SQL>
+  </REMIT_ContractTypes>
+
+  <REMIT_ContractTypes>
+    <ID>delete_REMIT_ContractType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_ContractTypes" SET "isDeleted" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_ContractTypes>
+
+  <REMIT_ContractTypes>
+    <ID>update_REMIT_ContractType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_ContractTypes" SET 
+      "Code" = @prm_Code, "Name" = @prm_Name, "enableTable1" = @prm_enableTable1, "enableTable2" = @prm_enableTable2
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_ContractTypes>
+
+  <REMIT_LoadTypes>
+    <ID>insert_REMIT_LoadType</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_LoadTypes" ("Code", "Name") VALUES (@prm_Code, @prm_Name)
+    </SQL>
+  </REMIT_LoadTypes>
+
+  <REMIT_LoadTypes>
+    <ID>update_REMIT_LoadType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_LoadTypes" SET
+      "Code" = @prm_Code,
+      "Name" = @prm_Name
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_LoadTypes>
+
+  <REMIT_LoadTypes>
+    <ID>delete_REMIT_LoadType</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_LoadTypes" SET "isDeleted" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_LoadTypes>
+
+  <REMIT_DataSourceHistory>
+    <ID>insert_REMIT_DataSourceHistory</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_DataSourceHistory" ("ID_REMIT_DataSource", "Date", "InputDataName", "InputData", "Status", "isProcessed", "hasError", "ProcessLog")
+      VALUES (@prm_ID_REMIT_DataSource, GetDate(), @prm_InputDataName, @prm_InputData, '', 0, 0, '')
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_DataSourceHistory>
+    <ID>update_REMIT_ReceiptFile</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_DataSourceHistory" SET 
+      "ReceiptDataName" = @prm_ReceiptDataName, 
+      "ReceiptData" = @prm_ReceiptData
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_DataSourceHistory>
+
+  <REMIT_Table1Reports>
+    <ID>insert_REMIT_Table1Report</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_Table1Reports" ("ID_DataSourceHistory", "ID_Agency", "ContractID", "ActionType", "ID_ContractName", "ID_ContractType", "SettlementMethod", "DeliveryPoint",
+      "ParticipantIdentifier", "ParticipantIdentifierType", "CounterpartIdentifier", "CounterpartIdentifierType", "BeneficiaryIdentifier", "BeneficiaryIdentifierType", "BuySellIndicator",
+      "TransactionID", "TransactionTimestamp", "LinkedTransactionID", "Price", "ID_Currency", /*"PriceFormula",*/ "NotionalAmount", "ID_NotionalCurrency", "Volume", "VolumeMU", "TotalNotionalQuantity", "TotalNotionalQuantityMU", 
+      "DeliveryStartDate", "DeliveryEndDate", "ID_LoadType")
+      VALUES (@prm_ID_DataSourceHistory, @prm_ID_Agency, @prm_ContractID, @prm_ActionType, @prm_ID_ContractName, @prm_ID_ContractType, @prm_SettlementMethod, @prm_DeliveryPoint,
+      @prm_ParticipantIdentifier, @prm_ParticipantIdentifierType, @prm_CounterpartIdentifier, @prm_CounterpartIdentifierType, @prm_BeneficiaryIdentifier, @prm_BeneficiaryIdentifierType, @prm_BuySellIndicator,
+      @prm_TransactionID, @prm_TransactionTimestamp, @prm_LinkedTransactionID, @prm_Price, @prm_ID_Currency, /*@prm_PriceFormula,*/ @prm_NotionalAmount, @prm_ID_NotionalCurrency, @prm_Volume, @prm_VolumeMU, @prm_TotalNotionalQuantity, @prm_TotalNotionalQuantityMU, 
+      @prm_DeliveryStartDate, @prm_DeliveryEndDate, @prm_ID_LoadType)
+    </SQL>
+  </REMIT_Table1Reports>
+
+  <REMIT_Table1Reports>
+    <ID>update_REMIT_Table1Report</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_Table1Reports" SET
+      "ContractID" = @prm_ContractID, 
+      "ActionType" = @prm_ActionType, 
+      "ID_ContractName" = @prm_ID_ContractName, 
+      "ID_ContractType" = @prm_ID_ContractType, 
+      "SettlementMethod" = @prm_SettlementMethod,
+      "DeliveryPoint" = @prm_DeliveryPoint,
+      "ParticipantIdentifier" = @prm_ParticipantIdentifier, 
+      "ParticipantIdentifierType" = @prm_ParticipantIdentifierType, 
+      "CounterpartIdentifier" = @prm_CounterpartIdentifier, 
+      "CounterpartIdentifierType" = @prm_CounterpartIdentifierType, 
+      "BeneficiaryIdentifier" = @prm_BeneficiaryIdentifier,
+      "BeneficiaryIdentifierType" = @prm_BeneficiaryIdentifierType,
+      "BuySellIndicator" = @prm_BuySellIndicator,
+      "TransactionID" = @prm_TransactionID, 
+      "TransactionTimestamp" = @prm_TransactionTimestamp, 
+      "LinkedTransactionID" = @prm_LinkedTransactionID,
+      "Price" = @prm_Price, 
+      "ID_Currency" = @prm_ID_Currency, 
+      --"PriceFormula" = @prm_PriceFormula, 
+      "NotionalAmount" = @prm_NotionalAmount, 
+      "ID_NotionalCurrency" = @prm_ID_NotionalCurrency, 
+      "Volume" = @prm_Volume, 
+      "VolumeMU" = @prm_VolumeMU, 
+      "TotalNotionalQuantity" = @prm_TotalNotionalQuantity, 
+      "TotalNotionalQuantityMU" = @prm_TotalNotionalQuantityMU, 
+      "DeliveryStartDate" = @prm_DeliveryStartDate, 
+      "DeliveryEndDate" = @prm_DeliveryEndDate, 
+      "ID_LoadType" = @prm_ID_LoadType
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table1Reports>
+
+  <REMIT_Table1Reports>
+    <ID>submit_REMIT_Table1Report</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_Table1Reports" SET 
+      "isSubmitted" = 1, 
+      "SubmitTimestamp" = GetDate()
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table1Reports>
+
+  <REMIT_Table2Reports>
+    <ID>insert_REMIT_Table2Report</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_Table2Reports"
+      ("ID_DataSourceHistory", "ID_Agency", "isSubmitted", "SubmitTimestamp", "ContractID", "ContractDate", "ActionType", "ID_ContractName", "ID_ContractType",
+      "ParticipantIdentifier", "ParticipantIdentifierType", "OtherParticipantIdentifier", "OtherParticipantIdentifierType", "BeneficiaryIdentifier", "BeneficiaryIdentifierType",
+      "TradingCapacityType", "BuySellIndicator", "Price", "ID_Currency", "PriceFormula", "EstimatedNotionalAmount", "ID_NotionalCurrency",
+      "TotalNotionalQuantity", "TotalNotionalQuantityMU", "VolumeOptionality", "VolumeOptionalityFrequency", "TypeOfIndexPrice", "SettlementMethod", "DeliveryPoint",
+      "DeliveryStartDate", "DeliveryEndDate", "ID_LoadType")
+      VALUES
+      (@prm_ID_DataSourceHistory, @prm_ID_Agency, 0, GetDate(), @prm_ContractID, @prm_ContractDate, @prm_ActionType, @prm_ID_ContractName, @prm_ID_ContractType,
+      @prm_ParticipantIdentifier, @prm_ParticipantIdentifierType, @prm_OtherParticipantIdentifier, @prm_OtherParticipantIdentifierType, @prm_BeneficiaryIdentifier, @prm_BeneficiaryIdentifierType,
+      @prm_TradingCapacityType, @prm_BuySellIndicator, @prm_Price, @prm_ID_Currency, @prm_PriceFormula, @prm_EstimatedNotionalAmount, @prm_ID_NotionalCurrency,
+      @prm_TotalNotionalQuantity, @prm_TotalNotionalQuantityMU, @prm_VolumeOptionality, @prm_VolumeOptionalityFrequency, @prm_TypeOfIndexPrice, @prm_SettlementMethod, @prm_DeliveryPoint, 
+      @prm_DeliveryStartDate, @prm_DeliveryEndDate, @prm_ID_LoadType)
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_Table2Reports>
+    <ID>update_REMIT_Table2Report</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      UPDATE "REMIT_Table2Reports" SET
+      "ContractID" = @prm_ContractID, 
+      "ContractDate" = @prm_ContractDate, 
+      "ActionType" = @prm_ActionType, 
+      "ID_ContractName" = @prm_ID_ContractName, 
+      "ID_ContractType" = @prm_ID_ContractType,
+      "ParticipantIdentifier" = @prm_ParticipantIdentifier, 
+      "ParticipantIdentifierType" = @prm_ParticipantIdentifierType, 
+      "OtherParticipantIdentifier" = @prm_OtherParticipantIdentifier, 
+      "OtherParticipantIdentifierType" = @prm_OtherParticipantIdentifierType, 
+      "BeneficiaryIdentifier" = @prm_BeneficiaryIdentifier, 
+      "BeneficiaryIdentifierType" = @prm_BeneficiaryIdentifierType,
+      "TradingCapacityType" = @prm_TradingCapacityType, 
+      "BuySellIndicator" = @prm_BuySellIndicator, 
+      "Price" = @prm_Price, 
+      "ID_Currency" = @prm_ID_Currency, 
+      "PriceFormula" = @prm_PriceFormula, 
+      "EstimatedNotionalAmount" = @prm_EstimatedNotionalAmount, 
+      "ID_NotionalCurrency" = @prm_ID_NotionalCurrency,
+      "TotalNotionalQuantity" = @prm_TotalNotionalQuantity, 
+      "TotalNotionalQuantityMU" = @prm_TotalNotionalQuantityMU, 
+      "VolumeOptionality" = @prm_VolumeOptionality, 
+      "VolumeOptionalityFrequency" = @prm_VolumeOptionalityFrequency, 
+      "TypeOfIndexPrice" = @prm_TypeOfIndexPrice, 
+      "SettlementMethod" = @prm_SettlementMethod, 
+      "DeliveryPoint" = @prm_DeliveryPoint,
+      "DeliveryStartDate" = @prm_DeliveryStartDate, 
+      "DeliveryEndDate" = @prm_DeliveryEndDate, 
+      "ID_LoadType" = @prm_ID_LoadType
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table2Reports>
+  
+  <REMIT_Table2Reports>
+    <ID>update_REMIT_Table2VolumeOptionality</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      IF @prm_ID = 0
+      INSERT INTO "REMIT_Table2VolumeOptionalities" ("ID_Table2Report", "Capacity", "CapacityMU", "StartDate", "EndDate")
+      VALUES (@prm_ID_Table2Report, @prm_Capacity, @prm_CapacityMU, @prm_StartDate, @prm_EndDate)
+      ELSE
+      UPDATE "REMIT_Table2VolumeOptionalities" SET
+      "ID_Table2Report" = @prm_ID_Table2Report,
+      "Capacity" = @prm_Capacity,
+      "CapacityMU" = @prm_CapacityMU,
+      "StartDate" = @prm_StartDate,
+      "EndDate" = @prm_EndDate
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_Table2Reports>
+    <ID>update_REMIT_Table2FixingIndexDetail</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      IF @prm_ID = 0
+      INSERT INTO "REMIT_Table2FixingIndexDetails" ("ID_Table2Report", "FixingIndex", "ID_FixingIndexContractType", "FixingIndexSource", "FirstFixingDate", "LastFixingDate", "FixingFrequency")
+      VALUES (@prm_ID_Table2Report, @prm_FixingIndex, @prm_ID_FixingIndexContractType, @prm_FixingIndexSource, @prm_FirstFixingDate, @prm_LastFixingDate, @prm_FixingFrequency)
+      ELSE
+      UPDATE "REMIT_Table2FixingIndexDetails" SET
+      "ID_Table2Report" = @prm_ID_Table2Report,
+      "FixingIndex" = @prm_FixingIndex, 
+      "ID_FixingIndexContractType" = @prm_ID_FixingIndexContractType,
+      "FixingIndexSource" = @prm_FixingIndexSource, 
+      "FirstFixingDate" = @prm_FirstFixingDate, 
+      "LastFixingDate" = @prm_LastFixingDate,
+      "FixingFrequency" = @prm_FixingFrequency
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_Table2Reports>
+    <ID>submit_REMIT_Table2Report</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_Table2Reports" SET 
+      "isSubmitted" = 1, 
+      "SubmitTimestamp" = GetDate()
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_Table2Reports>
+
+  <REMIT_StorageReports>
+    <ID>insert_REMIT_StorageReport</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_StorageReports" ("ID_DataSourceHistory", "ID_Agency", "isSubmitted", "SubmitTimestamp")
+      VALUES (@prm_ID_DataSourceHistory, @prm_ID_Agency, 0, GetDate())
+    </SQL>
+  </REMIT_StorageReports>
+
+  <REMIT_StorageReports>
+    <ID>submit_REMIT_StorageReport</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_StorageReports" SET 
+      "isSubmitted" = 1, 
+      "SubmitTimestamp" = GetDate()
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_StorageReports>
+
+  <REMIT_StorageReports>
+    <ID>check_REMIT_EmptyStorageReport</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      DECLARE @count_StorageFacilityReports AS INT
+      DECLARE @count_StorageParticipantActivityReports AS INT
+      DECLARE @count_StorageUnavailabilityReports AS INT
+      DECLARE @isSubmitted AS BIT
+
+      SELECT @count_StorageFacilityReports = Count(*) FROM "REMIT_StorageFacilityReports" WHERE "ID_StorageReport" = @prm_ID
+      SELECT @count_StorageParticipantActivityReports = Count(*) FROM "REMIT_StorageParticipantActivityReports" WHERE "ID_StorageReport" = @prm_ID
+      SELECT @count_StorageUnavailabilityReports = Count(*) FROM "REMIT_StorageUnavailabilityReports" WHERE "ID_StorageReport" = @prm_ID
+      SELECT @isSubmitted = "isSubmitted" FROM "REMIT_StorageReports" WHERE "ID" = @prm_ID
+
+      IF (@isSubmitted = 0) AND (@count_StorageFacilityReports = 0) AND
+        (@count_StorageParticipantActivityReports = 0) AND (@count_StorageUnavailabilityReports = 0)
+      BEGIN
+        DELETE FROM "REMIT_DataSourceHistory" WHERE "ID" = (SELECT "ID_DataSourceHistory" FROM "REMIT_StorageReports" WHERE "ID" = @prm_ID)
+        DELETE FROM "REMIT_StorageReports" WHERE "ID" = @prm_ID
+      END
+    </SQL>
+  </REMIT_StorageReports>
+
+  <REMIT_StorageFacilityReports>
+    <ID>insert_REMIT_StorageFacilityReport</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_StorageFacilityReports" ("ID_StorageReport", "ReferenceID", "GasDayStart", "GasDayEnd", "StorageFacilityIdentifier", "StorageFacilityOperatorIdentifier", 
+      "StorageType", "Storage", "Injection", "Withdrawal", "TechnicalCapacity", "ContractedCapacity", "AvailableCapacity",
+      "StorageFacilityIdentifierType", "StorageFacilityOperatorIdentifierType", "StorageMU", "InjectionMU", "WithdrawalMU", "TechnicalCapacityMU", "ContractedCapacityMU", "AvailableCapacityMU")
+      VALUES (@prm_ID_StorageReport, '', @prm_GasDayStart, @prm_GasDayEnd, @prm_StorageFacilityIdentifier, @prm_StorageFacilityOperatorIdentifier, 
+      @prm_StorageType, @prm_Storage, @prm_Injection, @prm_Withdrawal, @prm_TechnicalCapacity, @prm_ContractedCapacity, @prm_AvailableCapacity,
+      @prm_StorageFacilityIdentifierType, @prm_StorageFacilityOperatorIdentifierType, @prm_StorageMU, @prm_InjectionMU, @prm_WithdrawalMU, @prm_TechnicalCapacityMU, @prm_ContractedCapacityMU, @prm_AvailableCapacityMU)
+    </SQL>
+  </REMIT_StorageFacilityReports>
+
+  <REMIT_StorageFacilityReports>
+    <ID>update_REMIT_StorageFacilityReport</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_StorageFacilityReports" SET
+      "GasDayStart" = @prm_GasDayStart, 
+      "GasDayEnd" = @prm_GasDayEnd, 
+      "StorageFacilityIdentifier" = @prm_StorageFacilityIdentifier, 
+      "StorageFacilityOperatorIdentifier" = @prm_StorageFacilityOperatorIdentifier, 
+      "StorageType" = @prm_StorageType, 
+      "Storage" = @prm_Storage, 
+      "Injection" = @prm_Injection, 
+      "Withdrawal" = @prm_Withdrawal, 
+      "TechnicalCapacity" = @prm_TechnicalCapacity, 
+      "ContractedCapacity" = @prm_ContractedCapacity, 
+      "AvailableCapacity" = @prm_AvailableCapacity,
+      "StorageFacilityIdentifierType" = @prm_StorageFacilityIdentifierType,
+      "StorageFacilityOperatorIdentifierType" = @prm_StorageFacilityOperatorIdentifierType,
+      "StorageMU" = @prm_StorageMU,
+      "InjectionMU" = @prm_InjectionMU,
+      "WithdrawalMU" = @prm_WithdrawalMU,
+      "TechnicalCapacityMU" = @prm_TechnicalCapacityMU,
+      "ContractedCapacityMU" = @prm_ContractedCapacityMU,
+      "AvailableCapacityMU" = @prm_AvailableCapacityMU
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_StorageFacilityReports>  
+
+  <REMIT_StorageParticipantActivityReports>
+    <ID>insert_REMIT_StorageParticipantActivityReport</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_StorageParticipantActivityReports" ("ID_StorageReport", "ReferenceID", "GasDayStart", "GasDayEnd", "StorageFacilityIdentifier", "StorageFacilityOperatorIdentifier", "MarketParticipantIdentifier", "Storage",
+      "StorageFacilityIdentifierType", "StorageFacilityOperatorIdentifierType", "MarketParticipantIdentifierType", "StorageMU")
+      VALUES (@prm_ID_StorageReport, '', @prm_GasDayStart, @prm_GasDayEnd, @prm_StorageFacilityIdentifier, @prm_StorageFacilityOperatorIdentifier, @prm_MarketParticipantIdentifier, @prm_Storage,
+      @prm_StorageFacilityIdentifierType, @prm_StorageFacilityOperatorIdentifierType, @prm_MarketParticipantIdentifierType, @prm_StorageMU)
+    </SQL>
+  </REMIT_StorageParticipantActivityReports>
+
+  <REMIT_StorageParticipantActivityReports>
+    <ID>update_REMIT_StorageParticipantActivityReport</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_StorageParticipantActivityReports" SET
+      "GasDayStart" = @prm_GasDayStart,
+      "GasDayEnd" = @prm_GasDayEnd,
+      "StorageFacilityIdentifier" = @prm_StorageFacilityIdentifier,
+      "StorageFacilityOperatorIdentifier" = @prm_StorageFacilityOperatorIdentifier,
+      "MarketParticipantIdentifier" = @prm_MarketParticipantIdentifier,
+      "Storage" = @prm_Storage,
+      "StorageFacilityIdentifierType" = @prm_StorageFacilityIdentifierType, 
+      "StorageFacilityOperatorIdentifierType" = @prm_StorageFacilityOperatorIdentifierType, 
+      "MarketParticipantIdentifierType" = @prm_MarketParticipantIdentifierType, 
+      "StorageMU" = @prm_StorageMU
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_StorageParticipantActivityReports>
+
+  <REMIT_StorageUnavailabilityReports>
+    <ID>insert_REMIT_StorageUnavailabilityReport</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "REMIT_StorageUnavailabilityReports" ("ID_StorageReport", "ReferenceID", "UnavailabilityNotificationTimestamp", "StorageFacilityIdentifier", "StorageFacilityOperatorIdentifier", "UnavailabilityStart", "UnavailabilityEnd", "UnavailabilityEndFlag", "UnavailableVolume", "UnavailableInjection", "UnavailableWithdrawal", "UnavailabilityType", "UnavailabilityDescription",
+      "StorageFacilityIdentifierType", "StorageFacilityOperatorIdentifierType", "UnavailableVolumeMU", "UnavailableInjectionMU", "UnavailableWithdrawalMU")
+      VALUES (@prm_ID_StorageReport, '', @prm_UnavailabilityNotificationTimestamp, @prm_StorageFacilityIdentifier, @prm_StorageFacilityOperatorIdentifier, @prm_UnavailabilityStart, @prm_UnavailabilityEnd, @prm_UnavailabilityEndFlag, @prm_UnavailableVolume, @prm_UnavailableInjection, @prm_UnavailableWithdrawal, @prm_UnavailabilityType, @prm_UnavailabilityDescription,
+      @prm_StorageFacilityIdentifierType, @prm_StorageFacilityOperatorIdentifierType, @prm_UnavailableVolumeMU, @prm_UnavailableInjectionMU, @prm_UnavailableWithdrawalMU)
+    </SQL>
+  </REMIT_StorageUnavailabilityReports>
+
+  <REMIT_StorageUnavailabilityReports>
+    <ID>update_REMIT_StorageUnavailabilityReport</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "REMIT_StorageUnavailabilityReports" SET
+      "UnavailabilityNotificationTimestamp" = @prm_UnavailabilityNotificationTimestamp,
+      "StorageFacilityIdentifier" = @prm_StorageFacilityIdentifier,
+      "StorageFacilityOperatorIdentifier" = @prm_StorageFacilityOperatorIdentifier,
+      "UnavailabilityStart" = @prm_UnavailabilityStart,
+      "UnavailabilityEnd" = @prm_UnavailabilityEnd,
+      "UnavailabilityEndFlag" = @prm_UnavailabilityEndFlag,
+      "UnavailableVolume" = @prm_UnavailableVolume,
+      "UnavailableInjection" = @prm_UnavailableInjection,
+      "UnavailableWithdrawal" = @prm_UnavailableWithdrawal,
+      "UnavailabilityType" = @prm_UnavailabilityType,
+      "UnavailabilityDescription" = @prm_UnavailabilityDescription,
+      "StorageFacilityIdentifierType" = @prm_StorageFacilityIdentifierType,
+      "StorageFacilityOperatorIdentifierType" = @prm_StorageFacilityOperatorIdentifierType,
+      "UnavailableVolumeMU" = @prm_UnavailableVolumeMU,
+      "UnavailableInjectionMU" = @prm_UnavailableInjectionMU,
+      "UnavailableWithdrawalMU" = @prm_UnavailableWithdrawalMU
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </REMIT_StorageUnavailabilityReports>
+  
+</OrdersDBModule>

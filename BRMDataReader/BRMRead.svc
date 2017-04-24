@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="BRMDataReader.BRMRead" CodeBehind="BRMRead.svc.cs" %>

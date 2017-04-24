@@ -1,0 +1,8 @@
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\bin\BRMDataReader.dll
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\bin\BRMDataReader.pdb
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\bin\Newtonsoft.Json.dll
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\bin\Newtonsoft.Json.pdb
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\bin\Newtonsoft.Json.xml
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\obj\Release\BRMDataReader.csprojResolveAssemblyReference.cache
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\obj\Release\BRMDataReader.dll
+D:\Projects\BRM\Implementation\WebServices\BRMDataReader\obj\Release\BRMDataReader.pdb

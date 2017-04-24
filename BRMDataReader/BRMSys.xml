@@ -1,0 +1,776 @@
+﻿<BRMSys>
+
+  <sys>
+    <ID>GetVar</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT dbo.GetVar(@prm_VarName, @prm_X, @prm_Y, @prm_Default) AS "Value"
+    </SQL>
+  </sys>
+
+  <sys>
+    <ID>GetVarSTR</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT dbo.GetVarSTR(@prm_VarName, @prm_X, @prm_Y, @prm_Default) AS "Value"
+    </SQL>
+  </sys>
+
+  <Events>
+    <ID>insert_Event</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Events" ("Priority", "Resource", "EventType", "ID_Resource", "ID_LinkedResource")
+      VALUES (@prm_Priority, @prm_Resource, @prm_EventType, @prm_ID_Resource, @prm_ID_LinkedResource)
+    </SQL>
+  </Events>
+
+  <Notifications>
+    <ID>insert_Notification</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Notifications" 
+      ("ID_Bursary", "ID_SenderUser", "ID_SenderAgency", "ID_RecipientUser", "ID_RecipientAgency", "Subject", "Body", "BodyHTML")
+      VALUES
+      (@prm_ID_Bursary, @prm_ID_SenderUser, @prm_ID_SenderAgency, @prm_ID_RecipientUser, @prm_ID_RecipientAgency, @prm_Subject, @prm_Body, @prm_BodyHTML)
+    </SQL>
+  </Notifications>
+
+  <Journal>
+    <ID>insert_Journal</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Journal" ("Operation", "ID_User", "ID_Broker", "ID_Agency", "ID_Client", "ID_Bursary", "ID_Ring", "ID_Asset", "ID_Order", "Quantity", "Price", "Message")
+      VALUES (@prm_Operation, @prm_ID_User, @prm_ID_Broker, @prm_ID_Agency, @prm_ID_Client, @prm_ID_Bursary, @prm_ID_Ring, @prm_ID_Asset, @prm_ID_Order, @prm_Quantity, @prm_Price, @prm_Message)
+    </SQL>
+  </Journal>
+
+  <SessionLogs>
+    <ID>insert_SessionLog</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "SessionLogs" ("ID_Session", "Log") VALUES (@prm_ID_Session, @prm_Log)
+    </SQL>
+  </SessionLogs>
+
+  <Users>
+    <ID>CheckLogin</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT U.* FROM "Users" U
+      LEFT JOIN "Bursaries" B ON (U."ID_Bursary" = B."ID")    
+      LEFT JOIN "Brokers" BK ON (U."ID" = BK."ID_User")
+      LEFT JOIN "Agencies" A ON (BK."ID_Agency" = A."ID")
+      WHERE (U."LoginName" = @prm_LoginName) AND (U."LoginPassword" = @prm_LoginPassword) 
+      AND ((B."Code" = @prm_EntryPoint) OR (U."isAdministrator" = 1) OR (U."isSystemUser" = 1))
+      AND (U."isActive" = 1) AND (U."isDeleted" = 0) 
+      AND (((A."ID" IS NOT NULL) AND (A."Status" = 'active')) OR (A."ID" IS NULL))
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>select_Users</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Users" 
+      WHERE (("ID_Bursary" = @prm_ID_Bursary) OR ("isAdministrator" = 1)) 
+      AND (("ID" = @prm_ID) OR (@prm_ID = -1))
+      AND ("isSystemUser" = 0)
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>select_ExistingLogin</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Users" U
+      WHERE (U."ID_Bursary" = @prm_ID_Bursary) AND (U."LoginName" = @prm_LoginName) AND (U."isDeleted" = 0)
+      AND ((U."ID" != @prm_ID_User) OR (@prm_ID_User = 0))
+    </SQL>
+  </Users>
+  
+  <Users>
+    <ID>select_CurrentUser</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT U."ID", U."LoginName", U."Email", U."isAdministrator", U."isNPC",
+      IsNull(B."ID", 0) AS "ID_Broker", IB."Title", IB."FirstName", IB."LastName",
+      IsNull(A."ID", 0) AS "ID_Agency", IA."CompanyName", IsNull(C."ID", 0) AS "ID_Client",
+      IsNull((
+      SELECT '[' + STUFF(
+      (
+      SELECT ', ' + CAST("ID_UserRole" AS VARCHAR)
+      FROM "UsersXUserRoles" UXUR
+      WHERE UXUR."ID_User" = U."ID"
+      FOR XML PATH('')
+      ), 1, 1, '') + ']'
+      ), '[]') AS "ID_UserRole",
+      (
+      SELECT STUFF(
+      (
+      SELECT ', ' + UR."Name"
+      FROM "UsersXUserRoles" UXUR
+      LEFT JOIN "UserRoles" UR ON (UXUR."ID_UserRole" = UR."ID")
+      WHERE UXUR."ID_User" = U."ID"
+      FOR XML PATH('')
+      ), 1, 1, '')
+      ) AS "UserRole"
+      FROM "Users" U
+      LEFT JOIN "Brokers" B ON (U."ID" = B."ID_User") AND (B."isDeleted" = 0)
+      LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency") AND (C."isHouse" = 1)
+      LEFT JOIN "Identities" IB ON (B."ID" = IB."ID_Broker")
+      LEFT JOIN "Identities" IA ON (A."ID" = IA."ID_Agency") AND (C."ID" = IA."ID_Client")--AND (IA."ID_Client" = 0)
+      WHERE U."ID" = @prm_ID_User
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>select_UsersDetailed</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT U."ID", U."LoginName", U."Email", U."isAdministrator", U."isNPC", U."isActive",
+      B."ID" AS "ID_Broker", IB."Title", IB."FirstName", IB."LastName", IB."SocialCode", IB."IdentityCard", 
+      A."ID" AS "ID_Agency", IA."CompanyName", C."ID" AS "ID_Client", IB."Phone", IB."Fax", IB."Mobile",
+      IsNull((
+      SELECT '[' + STUFF(
+      (
+      SELECT ', ' + CAST("ID_UserRole" AS VARCHAR)
+      FROM "UsersXUserRoles" UXUR
+      WHERE UXUR."ID_User" = U."ID"
+      FOR XML PATH('')
+      ), 1, 1, '') + ']'
+      ), '[]') AS "ID_UserRole",
+      (
+      SELECT STUFF(
+      (
+      SELECT ', ' + UR."Name"
+      FROM "UsersXUserRoles" UXUR
+      LEFT JOIN "UserRoles" UR ON (UXUR."ID_UserRole" = UR."ID")
+      WHERE UXUR."ID_User" = U."ID"
+      FOR XML PATH('')
+      ), 1, 1, '')
+      ) AS "UserRole"
+      FROM "Users" U
+      LEFT JOIN "Brokers" B ON (U."ID" = B."ID_User") AND (B."isDeleted" = 0)
+      LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency") AND (C."isHouse" = 1)
+      LEFT JOIN "Identities" IB ON (B."ID" = IB."ID_Broker")
+      LEFT JOIN "Identities" IA ON (A."ID" = IA."ID_Agency") AND (C."ID" = IA."ID_Client")
+      WHERE ((U."ID_Bursary" = @prm_ID_Bursary) OR (U."isAdministrator" = 1))
+      AND ((U."ID" = @prm_ID_User) OR (@prm_ID_User = -1)) AND (U."isDeleted" = 0)
+      AND (U."isSystemUser" = 0)
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>select_UsersWithPaging</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT T.* FROM
+      (
+        SELECT ROW_NUMBER() OVER (ORDER BY T."#prm_SortField" #prm_SortOrder) AS "row", T.* FROM
+        (
+          SELECT (SELECT COUNT(*) FROM "Users") AS "count", U."ID", U."LoginName", U."Email", U."isAdministrator", U."isNPC", U."isActive",
+          B."ID" AS "ID_Broker", IB."Title", IB."FirstName", IB."LastName", IB."SocialCode", IB."IdentityCard",
+          A."ID" AS "ID_Agency", IA."CompanyName", C."ID" AS "ID_Client", IB."Phone", IB."Fax", IB."Mobile",
+          IsNull((
+          SELECT '[' + STUFF(
+          (
+            SELECT ', ' + CAST("ID_UserRole" AS VARCHAR)
+            FROM "UsersXUserRoles" UXUR
+            WHERE UXUR."ID_User" = U."ID"
+            FOR XML PATH('')
+          ), 1, 1, '') + ']'
+          ), '[]') AS "ID_UserRole",
+          (
+          SELECT STUFF(
+          (
+            SELECT ', ' + UR."Name"
+            FROM "UsersXUserRoles" UXUR
+            LEFT JOIN "UserRoles" UR ON (UXUR."ID_UserRole" = UR."ID")
+            WHERE UXUR."ID_User" = U."ID"
+            FOR XML PATH('')
+          ), 1, 1, '')
+          ) AS "UserRole"
+          FROM "Users" U
+          LEFT JOIN "Brokers" B ON (U."ID" = B."ID_User") AND (B."isDeleted" = 0)
+          LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+          LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency") AND (C."isHouse" = 1)
+          LEFT JOIN "Identities" IB ON (B."ID" = IB."ID_Broker")
+          LEFT JOIN "Identities" IA ON (A."ID" = IA."ID_Agency") AND (C."ID" = IA."ID_Client")
+          WHERE ((U."ID_Bursary" = @prm_ID_Bursary) OR (U."isAdministrator" = 1))
+          AND ((U."ID" = @prm_ID_User) OR (@prm_ID_User = -1)) AND (U."isDeleted" = 0)
+          AND (U."isSystemUser" = 0)
+        ) T
+        WHERE (@prm_QueryKeyword = '') OR (T."LoginName" LIKE '%' + @prm_QueryKeyword) OR (T."Email" LIKE '%' + @prm_QueryKeyword + '%')
+        OR (T."FirstName" LIKE '%' + @prm_QueryKeyword + '%') OR (T."LastName" LIKE '%' + @prm_QueryKeyword + '%')
+        OR (T."CompanyName" LIKE '%' + @prm_QueryKeyword + '%') OR (T."UserRole" LIKE '%' + @prm_QueryKeyword + '%')
+      ) T
+      WHERE (@prm_QueryOffset = -1) OR (@prm_QueryLimit = -1) OR (T."row" BETWEEN @prm_QueryOffset AND @prm_QueryOffset + @prm_QueryLimit - 1)
+      ORDER BY T."#prm_SortField" #prm_SortOrder
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>insert_User</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Users" ("ID_Bursary", "LoginName", "LoginPassword", "Email", "isAdministrator", "isNPC", "isActive")
+      VALUES (@prm_ID_Bursary, @prm_LoginName, @prm_LoginPassword, @prm_Email, @prm_isAdministrator, @prm_isNPC, 1)
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>update_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Users" SET
+      "ID_Bursary" = @prm_ID_Bursary,
+      "LoginName" = @prm_LoginName,
+      "LoginPassword" = @prm_LoginPassword,
+      "Email" = @prm_Email,
+      "isAdministrator" = @prm_isAdministrator,
+      "isNPC" = @prm_isNPC,
+      "isActive" = @prm_isActive
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>delete_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Users" SET "isDeleted" = 1 
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>enable_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Users" SET "isActive" = 1
+      WHERE "ID" = @prm_ID
+      
+      INSERT INTO "Events" ("Date", "Priority", "Resource", "EventType", "ID_Resource", "ID_LinkedResource")
+      VALUES (GetDate(), 0, 'Users', 'enable', @prm_ID, 0)
+    </SQL>
+  </Users>
+
+  <Users>
+    <ID>disable_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Users" SET "isActive" = 0
+      WHERE "ID" = @prm_ID
+
+        
+      INSERT INTO "Events" ("Date", "Priority", "Resource", "EventType", "ID_Resource", "ID_LinkedResource")
+      VALUES (GetDate(), 0, 'Users', 'disable', @prm_ID, 0)
+    </SQL>
+  </Users>
+  
+  <UserRoles>
+    <ID>select_UserRoles</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT DISTINCT UR.* FROM "UserRoles" UR
+      LEFT JOIN "UsersXUserRoles" UXUR ON (UR."ID" = UXUR."ID_UserRole")
+      WHERE ("ID_Bursary" = @prm_ID_Bursary) AND ((UXUR."ID_User" = @prm_ID_User) OR (@prm_ID_User = -1))
+      AND ((UR."ID" = @prm_ID_UserRole) OR (@prm_ID_UserRole = -1))
+    </SQL>
+  </UserRoles>  
+
+  <UsersXUserRoles>
+    <ID>insert_UserXUserRole</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "UsersXUserRoles" ("ID_User", "ID_UserRole") 
+      VALUES (@prm_ID_User, @prm_ID_UserRole)
+    </SQL>
+  </UsersXUserRoles>
+
+  <UsersXUserRoles>
+    <ID>delete_UserXUserRolebyID_User</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      DELETE FROM "UsersXUserRoles" WHERE "ID_User" = @prm_ID_User
+    </SQL>
+  </UsersXUserRoles>
+
+  <States>
+    <ID>select_States</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "States" 
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </States>
+
+  <States>
+    <ID>insert_State</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "States" ("Name") VALUES (@prm_Name)
+    </SQL>
+  </States>
+
+  <States>
+    <ID>delete_State</ID>
+    <SQLType>3</SQLType>
+    <SQL>
+      DELETE FROM "States" WHERE "ID" = @prm_ID
+    </SQL>
+  </States>
+
+  <States>
+    <ID>update_State</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "States" SET "Name" = @prm_Name WHERE "ID" = @prm_ID
+    </SQL>
+  </States>
+
+  <States>
+    <ID>update_Deleted</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "States" SET "isDeleted" = @prm_isDeleted WHERE "ID" = @prm_ID
+    </SQL>
+  </States>
+
+  <StateOperations>
+    <ID>select_CheckStateOperation</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT SO.*, URXSO.* FROM "UsersXUserRoles" UXUR
+      LEFT JOIN "UserRolesXStates" URXS ON (UXUR."ID_UserRole" = URXS."ID_UserRole")
+      LEFT JOIN "States" S ON (URXS."ID_State" = S."ID")
+      LEFT JOIN "StateOperations" SO ON (S."ID" = SO.ID_CurrentState)
+      LEFT JOIN "UserRolesXStateOperations" URXSO ON (UXUR."ID_UserRole" = URXSO."ID_UserRole") AND (S."ID" = URXSO."ID_State") AND (SO."ID" = URXSO."ID_StateOperation")
+      WHERE (UXUR."ID_User" = @prm_ID_User) AND (S."Name" = @prm_CurrentState)
+      AND ((SO."Name" = @prm_CheckStateOperation) OR (@prm_CheckStateOperation = ''))
+      AND (URXSO."hasAccess" = 1)
+    </SQL>
+  </StateOperations>
+  
+  <Brokers>
+    <ID>select_Brokers</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Brokers" WHERE (("ID" = @prm_ID) OR (@prm_ID = -1))  AND ("isDeleted" = 0)
+    </SQL>
+  </Brokers>
+
+  <Brokers>
+    <ID>select_BrokersbyID_User</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Brokers" 
+      WHERE "ID_User" = @prm_ID_User
+    </SQL>
+  </Brokers>
+  
+  <Brokers>
+    <ID>select_BrokerbyID_User</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Brokers" WHERE "ID_User" = @prm_ID_User
+    </SQL>
+  </Brokers>
+  
+  <Brokers>
+    <ID>insert_Broker</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Brokers" ("ID_Agency", "ID_User", "isSupervisor", "isBroker")
+      VALUES (@prm_ID_Agency, @prm_ID_User, @prm_isSupervisor, @prm_isBroker)
+    </SQL>
+  </Brokers>
+
+  <Brokers>
+    <ID>update_Broker</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Brokers" SET
+      "ID_Agency" = @prm_ID_Agency,
+      "ID_User" = @prm_ID_User,
+      "isSupervisor" = @prm_isSupervisor
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Brokers>
+
+  <Brokers>
+    <ID>update_isBroker</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Brokers" SET "isBroker" = 1, "ID_User" = @prm_ID_User 
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Brokers>
+
+  <Brokers>
+    <ID>detach_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      DECLARE @prm_ID_User AS INT
+      SELECT @prm_ID_User = "ID_User" FROM "Brokers" WHERE "ID" = @prm_ID      
+      IF @prm_ID_User IS NOT NULL UPDATE "Users" SET "isDeleted" = 1 WHERE "ID" = @prm_ID_User
+      
+      UPDATE "Brokers" SET "ID_User" = 0, "isBroker" = 0 WHERE "ID" = @prm_ID
+    </SQL>
+  </Brokers>
+
+  <Brokers>
+    <ID>delete_Broker</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Brokers" SET "isDeleted" = 1 WHERE "ID" = @prm_ID
+    </SQL>
+  </Brokers>
+
+  <Clients>
+    <ID>select_HousebyID_Broker</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT C."ID", B."ID_Agency", C."ID_Bursary", C."Code", C."Name", C."isHouse", C."isDeleted" FROM "Brokers" B
+      LEFT JOIN "Agencies" A ON (B."ID_Agency" = A."ID")
+      LEFT JOIN "Clients" C ON (A."ID" = C."ID_Agency") AND (C."isHouse" = 1)
+      WHERE B."ID" = @prm_ID_Broker
+    </SQL>
+  </Clients>
+
+  <Identities>
+    <ID>select_IdentitiesbyIDs</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Identities" 
+      WHERE ("ID_Agency" = @prm_ID_Agency) AND ("ID_Broker" = @prm_ID_Broker) AND ("ID_Client" = @prm_ID_Client)
+    </SQL>
+  </Identities>
+
+  <Identities>
+    <ID>select_IdentitiesbySocialCode</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Identities" WHERE ("SocialCode" = @prm_SocialCode) AND ("ID_Broker" != @prm_ID_Broker)
+    </SQL>
+  </Identities>
+
+  <Identities>
+    <ID>select_IdentitiesbyIdentityCard</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Identities" WHERE ("IdentityCard" = @prm_IdentityCard) AND ("ID_Broker" != @prm_ID_Broker)
+    </SQL>
+  </Identities>
+
+  <Identities>
+    <ID>insert_Identity</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Identities" ("ID_Client", "ID_Agency", "ID_Broker", "IsCompany",
+      "FiscalCode", "RegisterCode", "CompanyName", "SocialCode", "IdentityCard",
+      "Title", "FirstName", "LastName", "ID_Address", "Bank", "BankAccount", "Phone", "Mobile", "Fax", "Email", "Website")
+      VALUES (@prm_ID_Client, @prm_ID_Agency, @prm_ID_Broker, @prm_IsCompany,
+      @prm_FiscalCode, @prm_RegisterCode, @prm_CompanyName, @prm_SocialCode,
+      @prm_IdentityCard, @prm_Title, @prm_FirstName, @prm_LastName, @prm_ID_Address,
+      @prm_Bank, @prm_BankAccount, @prm_Phone, @prm_Mobile, @prm_Fax, @prm_Email, @prm_Website)
+    </SQL>
+  </Identities>
+
+  <Identities>
+    <ID>update_Identity</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Identities" SET
+      "ID_Client" = @prm_ID_Client,
+      "ID_Agency" = @prm_ID_Agency,
+      "ID_Broker" = @prm_ID_Broker,
+      "IsCompany" = @prm_IsCompany,
+      "FiscalCode" = @prm_FiscalCode,
+      "RegisterCode" = @prm_RegisterCode,
+      "CompanyName" = @prm_CompanyName,
+      "SocialCode" = @prm_SocialCode,
+      "IdentityCard" = @prm_IdentityCard,
+      "Title" = @prm_Title,
+      "FirstName" = @prm_FirstName,
+      "LastName" = @prm_LastName,
+      "Bank" = @prm_Bank,
+      "BankAccount" = @prm_BankAccount,
+      "ID_Address" = @prm_ID_Address,
+      "Phone" = @prm_Phone,
+      "Mobile" = @prm_Mobile,
+      "Fax" = @prm_Fax,
+      "Email" = @prm_Email,
+      "Website" = @prm_Website
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Identities>
+
+  <Sessions>
+    <ID>select_Sessions</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Sessions" WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>select_SessionbySessionId</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT S.*, B."Database" FROM "Sessions" S
+      LEFT JOIN "Bursaries" B ON (S."ID_Bursary" = B."ID")
+      WHERE "SessionId" = @prm_SessionId
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>select_LastMessageTimestamp</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "LastMessageTimestamp" FROM "Sessions" WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>select_LastAlertTimestamp</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "LastAlertTimestamp" FROM "Sessions" WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>select_LastNotificationTimestamp</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "LastNotificationTimestamp" FROM "Sessions" WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>select_LastEventTimestamp</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT "LastEventTimestamp" FROM "Sessions" WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>insert_Session</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Sessions" ("SessionId", "ID_User", "ID_UserRole", "CurrentState", "EntryPoint", "ID_Bursary", "LastMessageTimestamp", "LastAlertTimestamp", "LastNotificationTimestamp", "LastEventTimestamp", "Language")
+      VALUES (@prm_SessionId, @prm_ID_User, @prm_ID_UserRole, @prm_CurrentState, @prm_EntryPoint, @prm_ID_Bursary, @prm_LastMessageTimestamp, @prm_LastAlertTimestamp, @prm_LastNotificationTimestamp, @prm_LastEventTimestamp, @prm_Language)
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>update_Session</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Sessions" SET
+      "SessionId" = @prm_SessionId,
+      "ID_User" = @prm_ID_User,
+      "ID_UserRole" = @prm_ID_UserRole,
+      "CurrentState" = @prm_CurrentState,
+      "EntryPoint" = @prm_EntryPoint,
+      "ID_Bursary" = @prm_ID_Bursary,
+      "ID_Broker" = @prm_ID_Broker,
+      "ID_Agency" = @prm_ID_Agency,
+      "ID_Client" = @prm_ID_Client,
+      "LastMessageTimestamp" = @prm_LastMessageTimestamp,
+      "LastAlertTimestamp" = @prm_LastAlertTimestamp,
+      "LastNotificationTimestamp" = @prm_LastNotificationTimestamp,
+      "LastEventTimestamp" = @prm_LastEventTimestamp,
+      "Language" = @prm_Language
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>update_ID_User</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Sessions" SET
+      "ID_User" = @prm_ID_User
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>update_LastMessageTimestamp</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Sessions" SET
+      "LastMessageTimestamp" = @prm_LastMessageTimestamp
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>update_LastAlertTimestamp</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Sessions" SET
+      "LastAlertTimestamp" = @prm_LastAlertTimestamp
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <Sessions>
+    <ID>update_LastNotificationTimestamp</ID>
+    <SQLType>4</SQLType>
+    <SQL>
+      UPDATE "Sessions" SET
+      "LastNotificationTimestamp" = @prm_LastNotificationTimestamp
+      WHERE "ID" = @prm_ID
+    </SQL>
+  </Sessions>
+
+  <States>
+    <ID>select_States</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "States" 
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </States>
+
+  <States>
+    <ID>select_CheckState</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM
+      (
+      SELECT T."ID_UserRole",
+
+      CASE @prm_CurrentState
+      WHEN "CurrentStateOP" THEN "ID_CurrentStateOP"
+      WHEN "CurrentStateSP" THEN "ID_CurrentStateSP"
+      END AS "ID_CurrentState",
+
+      CASE @prm_CurrentState
+      WHEN "CurrentStateOP" THEN "CurrentStateOP"
+      WHEN "CurrentStateSP" THEN "CurrentStateSP"
+      END AS "CurrentState",
+
+      T."ID_NextState", T."NextState"
+
+      FROM
+      (
+      SELECT T.*,
+      URXSO."ID_State" AS "ID_CurrentStateOP", S."Name" AS "CurrentStateOP",
+      SP."ID" AS "ID_CurrentStateSP", SP."Name" AS "CurrentStateSP"
+      FROM
+      (
+      SELECT UXUR."ID_UserRole", S."ID" AS "ID_NextState", S."ID_Parent" AS "ID_NextStateParent", S."Name" AS "NextState" FROM "UsersXUserRoles" UXUR
+      LEFT JOIN "UserRolesXStates" URXS ON (UXUR."ID_UserRole" = URXS."ID_UserRole")
+      LEFT JOIN "States" S ON (URXS."ID_State" = S."ID")
+      WHERE (UXUR."ID_User" = @prm_ID_User) AND (UXUR."ID_UserRole" = @prm_ID_UserRole) AND (URXS."hasAccess" = 1)
+      UNION ALL
+      SELECT 0 AS "ID_UserRole", S."ID" AS "ID_NextState", S."ID_Parent" AS "ID_NextStateParent", S."Name" AS "NextState" FROM "Users" U
+      LEFT JOIN "States" S ON (1 = 1)
+      WHERE (U."ID" = @prm_ID_User) AND (U."isAdministrator" = 1)
+      ) T
+      LEFT JOIN "StateOperations" SO ON (T."ID_NextState" = SO."ID_NextState")
+      LEFT JOIN "UserRolesXStateOperations" URXSO ON (T."ID_UserRole" = URXSO."ID_UserRole") AND (SO."ID_CurrentState" = URXSO."ID_State") AND (SO."ID" = URXSO."ID_StateOperation") AND (URXSO."hasAccess" = 1)
+      LEFT JOIN "States" S ON (URXSO."ID_State" = S."ID")
+      LEFT JOIN "States" SP ON (T."ID_NextStateParent" = SP."ID")
+      ) T
+      WHERE (@prm_CheckState = '*')
+      OR ((@prm_CheckState = '') AND ((T."CurrentStateOP" = @prm_CurrentState) OR (T."CurrentStateSP" = @prm_CurrentState)))
+      OR ((T."NextState" = @prm_CheckState) AND ((T."CurrentStateOP" = @prm_CurrentState) OR (T."CurrentStateSP" = @prm_CurrentState)))
+      ) T
+      GROUP BY T."ID_UserRole", T."ID_CurrentState", T."CurrentState", T."ID_NextState", T."NextState"
+    </SQL>
+    <!--<SQL>
+      SELECT T."ID_UserRole", T."Name" AS "CurrentState", SO."Name" AS "Operation", S."Name" AS "NextState" FROM
+      (
+      SELECT UXUR."ID_UserRole", S.* FROM "UsersXUserRoles" UXUR
+      LEFT JOIN "UserRolesXStates" URXS ON (UXUR."ID_UserRole" = URXS."ID_UserRole")
+      LEFT JOIN "States" S ON (URXS."ID_State" = S."ID")
+      WHERE (UXUR."ID_User" = @prm_ID_User) AND (S."Name" = @prm_CurrentState)
+      ) T
+      LEFT JOIN "StateOperations" SO ON (T."ID" = SO."ID_CurrentState")
+      LEFT JOIN "States" S ON (SO."ID_NextState" = S."ID")
+      LEFT JOIN "UserRolesXStates" URXS ON (SO."ID_NextState" = URXS."ID_State") AND (URXS."ID_UserRole" = T."ID_UserRole")
+      WHERE ((S."Name" = @prm_CheckState) OR (@prm_CheckState = '')) AND (URXS."hasAccess" = 1)
+      UNION ALL
+      SELECT 0 AS "ID_UserRole", @prm_CurrentState AS "CurrentState", SO."Name" AS "Operation", SN."Name" AS "NextState" FROM "Users" U
+      LEFT JOIN "States" S ON (S."Name" = @prm_CurrentState)
+      LEFT JOIN "StateOperations" SO ON (S."ID" = SO."ID_CurrentState")
+      LEFT JOIN "States" SN ON (SO."ID_NextState" = SN."ID")
+      WHERE (U."ID" = @prm_ID_User) AND (U."isAdministrator" = 1) AND ((SN."Name" = @prm_CheckState) OR (@prm_CheckState = ''))
+    </SQL>-->
+  </States>
+
+  <States>
+    <ID>select_StateAccess</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "UserRolesXStates" URXS
+      LEFT JOIN "States" S ON (URXS."ID_State" = S."ID")
+      WHERE (URXS."ID_UserRole" = @prm_ID_UserRole) AND (S."ID_Bursary" = @prm_ID_Bursary)
+      AND (S."Name" = @prm_StateName) AND (URXS."hasAccess" = 1)
+    </SQL>
+  </States>
+
+  <Bursaries>
+    <ID>select_Bursaries</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Bursaries"
+      WHERE ("ID" = @prm_ID) OR (@prm_ID = -1)
+    </SQL>
+  </Bursaries>
+
+  <Bursaries>
+    <ID>select_BursarybyCode</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Bursaries"
+      WHERE "Code" = @prm_Code
+    </SQL>
+  </Bursaries>
+
+  <Markets>
+    <ID>select_DefaultMarket</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Markets" 
+      WHERE ("ID_Bursary" = @prm_ID_Bursary) AND ("isDefault" = 1)
+    </SQL>
+  </Markets>
+
+  <Rings>
+    <ID>select_DefaultRing</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Rings" 
+      WHERE("ID_Market" = @prm_ID_Market) AND ("isDefault" = 1)
+    </SQL>       
+  </Rings>
+
+  <Assets>
+    <ID>select_DefaultAsset</ID>
+    <SQLType>1</SQLType>
+    <SQL>
+      SELECT * FROM "Assets" 
+      WHERE ("ID_Ring" = @prm_ID_Ring) AND ("isDefault" = 1)
+    </SQL>
+  </Assets>
+
+  <Alerts>
+    <ID>insert_Alert</ID>
+    <SQLType>2</SQLType>
+    <SQL>
+      INSERT INTO "Alerts" ("ID_Market", "ID_Ring", "ID_Asset", "Message", "Message_RO", "Message_EN")
+      VALUES (@prm_ID_Market, @prm_ID_Ring, @prm_ID_Asset, @prm_Message, @prm_Message_RO, @prm_Message_EN)
+    </SQL>
+  </Alerts>
+
+</BRMSys>

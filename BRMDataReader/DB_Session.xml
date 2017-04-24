@@ -1,0 +1,7 @@
+<DBConnection>
+  <Server>.</Server>
+  <Database>db_name</Database>
+  <User>db_uid</User>
+  <Password>db_pwd</Password>
+  <Pooling>true</Pooling>
+</DBConnection>
